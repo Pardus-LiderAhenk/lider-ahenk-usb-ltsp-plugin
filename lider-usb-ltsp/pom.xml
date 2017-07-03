@@ -31,10 +31,6 @@
 			<artifactId>jackson-mapper-asl</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.jcraft</groupId>
-			<artifactId>jsch</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.aries.blueprint</groupId>
 			<artifactId>org.apache.aries.blueprint</artifactId>
 		</dependency>

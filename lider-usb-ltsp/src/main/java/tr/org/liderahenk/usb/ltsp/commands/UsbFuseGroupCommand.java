@@ -1,20 +1,15 @@
-package tr.org.liderahenk.backup.commands;
+package tr.org.liderahenk.usb.ltsp.commands;
 
 import java.util.ArrayList;
 
-import tr.org.liderahenk.backup.plugininfo.PluginInfoImpl;
 import tr.org.liderahenk.lider.core.api.plugin.ICommand;
 import tr.org.liderahenk.lider.core.api.service.ICommandContext;
 import tr.org.liderahenk.lider.core.api.service.ICommandResult;
 import tr.org.liderahenk.lider.core.api.service.ICommandResultFactory;
 import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
+import tr.org.liderahenk.usb.ltsp.plugininfo.PluginInfoImpl;
 
-/**
- * 
- * @author <a href="mailto:emre.akkaya@agem.com.tr">Emre Akkaya</a>
- *
- */
-public class BackupWithMonitoringCommand implements ICommand {
+public class UsbFuseGroupCommand implements ICommand {
 
 	private ICommandResultFactory resultFactory;
 	private PluginInfoImpl pluginInfo;
@@ -41,7 +36,7 @@ public class BackupWithMonitoringCommand implements ICommand {
 
 	@Override
 	public String getCommandId() {
-		return "BACKUP_WITH_MONITORING_TASK";
+		return "USB_FUSE_GROUP";
 	}
 
 	@Override

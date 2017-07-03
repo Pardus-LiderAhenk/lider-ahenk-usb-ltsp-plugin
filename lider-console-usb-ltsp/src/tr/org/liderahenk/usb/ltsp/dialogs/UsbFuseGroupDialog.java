@@ -21,7 +21,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	public UsbFuseGroupDialog(Shell parentShell, Set<String> dnSet)
 	{
 		super(parentShell, dnSet);
-		logger.debug("Backup Task Editor Initialization");
+		logger.debug("USB fuse group");
 	}
 
 	@Override
@@ -37,8 +37,6 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
 	@Override
 	public void validateBeforeExecution() throws ValidationException {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

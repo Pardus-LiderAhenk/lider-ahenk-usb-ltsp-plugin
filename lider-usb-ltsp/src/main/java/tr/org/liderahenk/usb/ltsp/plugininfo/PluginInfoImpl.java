@@ -1,4 +1,4 @@
-package tr.org.liderahenk.backup.plugininfo;
+package tr.org.liderahenk.usb.ltsp.plugininfo;
 
 import tr.org.liderahenk.lider.core.api.plugin.BasePluginInfo;
 
