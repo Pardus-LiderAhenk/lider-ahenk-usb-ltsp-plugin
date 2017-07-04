@@ -5,7 +5,7 @@
 
 def info():
     inf = dict()
-    inf['name'] = 'backup'
+    inf['name'] = 'usb_ltsp'
     inf['version'] = '1.0.0'
     inf['support'] = 'debian'
     inf['description'] = ''
