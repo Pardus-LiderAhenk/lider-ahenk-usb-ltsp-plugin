@@ -12,15 +12,17 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
+import tr.org.liderahenk.usb.ltsp.enums.StatusCode;
+
 @Entity
-@Table(name = "P_USB_FUSE_GROUP_STATE", uniqueConstraints = @UniqueConstraint(columnNames = { "USERNAME", "UID" }))
-public class UsbFuseGroupState implements Serializable {
+@Table(name = "P_USB_FUSE_GROUP_RESULT", uniqueConstraints = @UniqueConstraint(columnNames = { "USERNAME", "UID" }))
+public class UsbFuseGroupResult implements Serializable {
 
 	private static final long serialVersionUID = -4130227601711334080L;
 
 	@Id
 	@GeneratedValue
-	@Column(name = "USB_FUSE_GROUP_STATE_ID", unique = true, nullable = false)
+	@Column(name = "USB_FUSE_GROUP_RESULT_ID", unique = true, nullable = false)
 	private Long id;
 
 	@Column(name = "USERNAME", nullable = false)
@@ -29,22 +31,22 @@ public class UsbFuseGroupState implements Serializable {
 	@Column(name = "UID", nullable = false)
 	private String uid;
 
-	@Column(name = "STATE", nullable = false)
-	private String state; // 1: yetki verildi, 0: yetki kaldırıldı
+	@Column(name = "STATE_CODE", nullable = false)
+	private Integer statusCode;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "CREATE_DATE", nullable = false)
 	private Date createDate;
 
-	public UsbFuseGroupState() {
+	public UsbFuseGroupResult() {
 	}
 
-	public UsbFuseGroupState(Long id, String username, String uid, String state, Date createDate) {
+	public UsbFuseGroupResult(Long id, String username, String uid, StatusCode statusCode, Date createDate) {
 		super();
 		this.id = id;
 		this.username = username;
 		this.uid = uid;
-		this.state = state;
+		setStatusCode(statusCode);
 		this.createDate = createDate;
 	}
 
@@ -72,12 +74,16 @@ public class UsbFuseGroupState implements Serializable {
 		this.uid = uid;
 	}
 
-	public String getState() {
-		return state;
+	public StatusCode getStatusCode() {
+		return StatusCode.getType(statusCode);
 	}
 
-	public void setState(String state) {
-		this.state = state;
+	public void setStatusCode(StatusCode statusCode) {
+		if (statusCode == null) {
+			this.statusCode = null;
+		} else {
+			this.statusCode = statusCode.getId();
+		}
 	}
 
 	public Date getCreateDate() {
@@ -105,7 +111,7 @@ public class UsbFuseGroupState implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		UsbFuseGroupState other = (UsbFuseGroupState) obj;
+		UsbFuseGroupResult other = (UsbFuseGroupResult) obj;
 		if (uid == null) {
 			if (other.uid != null)
 				return false;
