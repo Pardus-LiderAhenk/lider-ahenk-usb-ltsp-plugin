@@ -63,6 +63,9 @@ class Fusegroup(AbstractPlugin):
                     else:
                         self.logger.error('A problem occurred while adding user {0} to fuse group'.format(user))
                         data['statusCode'] = 4
+
+                    if self.task['endDate']:
+                        self.setup_cron(user)
                 else:
                     self.logger.debug('')
                     result_code, p_out, p_err = self.execute('deluser {0} fuse'.format(user))
@@ -86,6 +89,24 @@ class Fusegroup(AbstractPlugin):
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                          message='USB hakları düzenlenirken hata oluştu',
                                          content_type=self.get_content_type().APPLICATION_JSON.value)
+
+    def setup_cron(self, username):
+        end_cron = self.task['endDate']
+
+        self.logger.debug('End date cron will be setup as {0}'.format(end_cron))
+
+        cron_command = '{0} root deluser {1} fuse\n'.format(end_cron, username)
+        cron_file = open('/etc/cron.d/fuse_remover', 'w+')
+        cron_file.write('# /etc/cron.d/fuse_remover: Removes fuse group from specified user.\n\n')
+        cron_file.write('SHELL=/bin/sh\n')
+        cron_file.write('PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n\n')
+        cron_file.write(cron_command)
+        cron_file.close()
+        change_cron_mod = 'chmod 600 /etc/cron.d/fuse_remover'
+        self.execute(change_cron_mod)
+        self.logger.debug('Changed mod of fuse-remover cron file. Restarting cron service')
+        self.execute("service cron restart")
+        self.logger.debug('Restarted cron service')
 
 
 def handle_task(task, context):
