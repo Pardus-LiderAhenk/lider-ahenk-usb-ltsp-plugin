@@ -3,8 +3,8 @@
 	DO NOT MODIFY THIS FILE UNLESS ABSOLUTELY NECESSARY!
 	HOW TO INSTALL BUNDLES INTO KARAF:
 
-	feature:repo-add  mvn:tr.org.liderahenk/lider-backup-feature/1.0.0/xml/features
-	feature:install lider-backup
+	feature:repo-add  mvn:tr.org.liderahenk/lider-usb-ltsp-feature/1.0.0/xml/features
+	feature:install lider-usb-ltsp
 
     Licensed to the Apache Software Foundation (ASF) under one or more
     contributor license agreements.  See the NOTICE file distributed with
@@ -23,21 +23,20 @@
 -->
 <features name="${project.artifactId}-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.3.0">
 
-    <feature name="lider-backup" version="${project.version}">
-        <feature>lider-backup-dependencies</feature>
-       	<feature>lider-backup-bundles</feature>
+    <feature name="lider-usb-ltsp" version="${project.version}">
+        <feature>lider-usb-ltsp-dependencies</feature>
+       	<feature>lider-usb-ltsp-bundles</feature>
     </feature>
 
-    <feature name="lider-backup-bundles" version="${project.version}">
-    	<configfile finalname="/etc/tr.org.liderahenk.backup.cfg">mvn:${groupId}/lider-backup/${project.version}/cfg</configfile>
-		<bundle>mvn:tr.org.liderahenk/lider-backup/${project.version}</bundle>
-		<bundle>mvn:tr.org.liderahenk/lider-backup-db/${project.version}</bundle>
+    <feature name="lider-usb-ltsp-bundles" version="${project.version}">
+    	<configfile finalname="/etc/tr.org.liderahenk.usb-ltsp.cfg">mvn:${groupId}/lider-usb-ltsp/${project.version}/cfg</configfile>
+		<bundle>mvn:tr.org.liderahenk/lider-usb-ltsp/${project.version}</bundle>
+		<bundle>mvn:tr.org.liderahenk/lider-usb-ltsp-db/${project.version}</bundle>
     </feature>
 
-    <feature name="lider-backup-dependencies" version="${project.version}">
+    <feature name="lider-usb-ltsp-dependencies" version="${project.version}">
 		<bundle>mvn:org.codehaus.jackson/jackson-core-asl/1.9.13</bundle>
 		<bundle>mvn:org.codehaus.jackson/jackson-mapper-asl/1.9.13</bundle>
-		<bundle>wrap:mvn:com.jcraft/jsch/0.1.54</bundle>
     </feature>
 
 </features>
