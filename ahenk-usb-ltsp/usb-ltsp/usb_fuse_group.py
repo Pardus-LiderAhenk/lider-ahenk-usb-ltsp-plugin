@@ -15,8 +15,9 @@ class Fusegroup(AbstractPlugin):
         self.message_code = self.get_message_code()
 
     def does_user_exist(self, username):
-        result_code, p_out, p_err = self.execute('grep -c \'{0}\' /etc/passwd'.format(username))
-        if p_err == 0 and p_out == 1:
+        result_code, p_out, p_err = self.execute('getent passwd | grep -c \'^{0}:\''.format(username))
+
+        if not p_err and p_out.strip() == '1':
             return True
         else:
             return False
@@ -32,11 +33,12 @@ class Fusegroup(AbstractPlugin):
 
         try:
             data_list = []
-            users = self.task['usernames'].replace(']', '').replace('[', '').split(',')
-            state = self.task['statusCode']
-
+            users = str(self.task['usernames']).replace(']', '').replace('[', '').split(',')
+            state = str(self.task['statusCode'])
+            err = 0
             self.logger.debug('Configuration of Usb privileges started.')
             for user in users:
+                user = user.replace('\'', '')
                 self.logger.debug('User {0} is handling'.format(user))
                 if not self.does_user_exist(user):
                     self.logger.debug('User {0} does not exist'.format(user))
@@ -44,6 +46,7 @@ class Fusegroup(AbstractPlugin):
                     data['username'] = user
                     data['statusCode'] = 3
                     data_list.append(data)
+                    err = 1
                     continue
                 if not self.does_group_exist('fuse'):
                     self.logger.debug('Fuse group does not exist')
@@ -51,6 +54,7 @@ class Fusegroup(AbstractPlugin):
                     data['username'] = user
                     data['statusCode'] = 2
                     data_list.append(data)
+                    err = 1
                     continue
 
                 data = dict()
@@ -63,6 +67,7 @@ class Fusegroup(AbstractPlugin):
                     else:
                         self.logger.error('A problem occurred while adding user {0} to fuse group'.format(user))
                         data['statusCode'] = 4
+                        err = 1
 
                     if self.task['endDate']:
                         self.setup_cron(user)
@@ -75,15 +80,22 @@ class Fusegroup(AbstractPlugin):
                     else:
                         self.logger.error('A problem occurred while removing user {0} from fuse group'.format(user))
                         data['statusCode'] = 4
+                        err = 1
                 data_list.append(data)
                 continue
 
             result = dict()
             result['fuse-group-results'] = data_list
-            self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
-                                         message='USB hakları düzenlendi.',
-                                         data=json.dumps(result),
-                                         content_type=self.get_content_type().APPLICATION_JSON.value)
+            if err == 1:
+                self.context.create_response(code=self.message_code.TASK_ERROR.value,
+                                             message='USB hakları düzenlenemedi.',
+                                             data=json.dumps(result),
+                                             content_type=self.get_content_type().APPLICATION_JSON.value)
+            else:
+                self.context.create_response(code=self.message_code.TASK_PROCESSED.value,
+                                             message='USB hakları düzenlendi.',
+                                             data=json.dumps(result),
+                                             content_type=self.get_content_type().APPLICATION_JSON.value)
         except Exception as e:
             self.logger.error('A problem occurred while editing usb privilege. Erro Message: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
