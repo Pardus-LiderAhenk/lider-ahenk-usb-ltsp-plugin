@@ -101,6 +101,7 @@
 						<Bundle-Version>1.0.0</Bundle-Version>
 						<!-- If the plugin also have a *-db bundle, then use this line instead: -->
 						<Import-Package>tr.org.liderahenk.usb.ltsp.entities.*,
+							tr.org.liderahenk.usb.ltsp.enums.*,
 							!tr.org.liderahenk.usb.ltsp.*, *</Import-Package>
 					</instructions>
 				</configuration>
