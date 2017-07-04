@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-SymbolicName: lider-console-backup;singleton:=true
+Bundle-SymbolicName: lider-console-usb-ltsp;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: javax.inject;bundle-version="1.0.0",
@@ -28,4 +28,4 @@ Require-Bundle: javax.inject;bundle-version="1.0.0",
  org.codehaus.jackson.core,
  org.codehaus.jackson.mapper
 Bundle-Vendor: Agem Bilişim
-Bundle-Name: Lider Ahenk Backup Plugin
+Bundle-Name: Lider Ahenk USB LTSP Plugin

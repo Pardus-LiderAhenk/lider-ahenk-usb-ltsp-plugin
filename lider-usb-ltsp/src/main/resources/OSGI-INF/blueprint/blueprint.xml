@@ -7,14 +7,14 @@
                  http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://svn.apache.org/repos/asf/aries/trunk/blueprint/blueprint-cm/src/main/resources/org/apache/aries/blueprint/compendium/cm/blueprint-cm-1.1.0.xsd
          ">
 
-	<cm:property-placeholder persistent-id="tr.org.liderahenk.backup"
+	<cm:property-placeholder persistent-id="tr.org.liderahenk.usb.ltsp"
 		update-strategy="reload">
 	</cm:property-placeholder>
 
 	<!-- IPluginInfo implementation is used to register plugin -->
 	<service ref="pluginInfoImpl"
 		interface="tr.org.liderahenk.lider.core.api.plugin.IPluginInfo" />
-	<bean id="pluginInfoImpl" class="tr.org.liderahenk.backup.plugininfo.PluginInfoImpl"
+	<bean id="pluginInfoImpl" class="tr.org.liderahenk.usb.ltsp.plugininfo.PluginInfoImpl"
 		init-method="refresh">
 		<property name="pluginName" value="${plugin.name}" />
 		<property name="pluginVersion" value="${plugin.version}" />
@@ -27,44 +27,23 @@
 		<property name="xbased" value="${plugin.x.based}" />
 	</bean>
 
-	<service ref="backupCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="backupCommand" class="tr.org.liderahenk.backup.commands.BackupCommand">
-		<property name="pluginInfo" ref="pluginInfoImpl" />
-		<property name="resultFactory" ref="resultFactory" />
-	</bean>
-
-	<service ref="restoreCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="restoreCommand" class="tr.org.liderahenk.backup.commands.RestoreCommand">
-		<property name="pluginInfo" ref="pluginInfoImpl" />
-		<property name="resultFactory" ref="resultFactory" />
-	</bean>
-
-	<service ref="getBackupServerConfigCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="getBackupServerConfigCommand" class="tr.org.liderahenk.backup.commands.GetBackupServerConfigCommand">
+	<service ref="usbFuseGroupCommand">
+	 	<interfaces>
+			<value>tr.org.liderahenk.lider.core.api.plugin.ICommand</value>
+			<value>tr.org.liderahenk.lider.core.api.plugin.ITaskAwareCommand</value>
+		</interfaces>
+	</service>
+	<bean id="usbFuseGroupCommand" class="tr.org.liderahenk.usb.ltsp.commands.UsbFuseGroupCommand">
 		<property name="pluginInfo" ref="pluginInfoImpl" />
 		<property name="resultFactory" ref="resultFactory" />
 		<property name="dbService" ref="dbService" />
 	</bean>
 
-	<service ref="saveBackupServerConfigCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="saveBackupServerConfigCommand" class="tr.org.liderahenk.backup.commands.SaveBackupServerConfigCommand">
+	<service ref="listUsbFuseGroupResultCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
+	<bean id="listUsbFuseGroupResultCommand" class="tr.org.liderahenk.usb.ltsp.commands.ListUsbFuseGroupResultCommand">
 		<property name="pluginInfo" ref="pluginInfoImpl" />
 		<property name="resultFactory" ref="resultFactory" />
 		<property name="dbService" ref="dbService" />
-	</bean>
-
-	<service ref="listBackupServerDirCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="listBackupServerDirCommand" class="tr.org.liderahenk.backup.commands.ListBackupServerDirCommand">
-		<property name="pluginInfo" ref="pluginInfoImpl" />
-		<property name="resultFactory" ref="resultFactory" />
-		<property name="dbService" ref="dbService" />
-	</bean>
-
-	<service ref="backupWithMonitoringCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
-	<bean id="backupWithMonitoringCommand"
-		class="tr.org.liderahenk.backup.commands.BackupWithMonitoringCommand">
-		<property name="pluginInfo" ref="pluginInfoImpl" />
-		<property name="resultFactory" ref="resultFactory" />
 	</bean>
 
 	<reference id="resultFactory"
