@@ -29,7 +29,7 @@
     </feature>
 
     <feature name="lider-usb-ltsp-bundles" version="${project.version}">
-    	<configfile finalname="/etc/tr.org.liderahenk.usb-ltsp.cfg">mvn:${groupId}/lider-usb-ltsp/${project.version}/cfg</configfile>
+    	<configfile finalname="/etc/tr.org.liderahenk.usb.ltsp.cfg">mvn:${groupId}/lider-usb-ltsp/${project.version}/cfg</configfile>
 		<bundle>mvn:tr.org.liderahenk/lider-usb-ltsp/${project.version}</bundle>
 		<bundle>mvn:tr.org.liderahenk/lider-usb-ltsp-db/${project.version}</bundle>
     </feature>
