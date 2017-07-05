@@ -1,11 +1,14 @@
 package tr.org.liderahenk.usb.ltsp.dialogs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -219,9 +222,9 @@ public class AgentUsbFuseGroupResultDialog extends DefaultLiderDialog {
 			IResponse response = TaskRestUtils.execute(request, false);
 			List<UsbFuseGroupResult> results = null;
 			if (response.getResultMap().get("fuse-group-results") != null) {
-				// TODO
-				// TODO
-				results = (List<UsbFuseGroupResult>) response.getResultMap().get("fuse-group-results");
+				ObjectMapper mapper = new ObjectMapper();
+				String str = response.getResultMap().get("fuse-group-results").toString();
+				results = Arrays.asList(mapper.readValue(str, UsbFuseGroupResult[].class));
 			}
 			tableViewer.setInput(results != null ? results : new ArrayList<UsbFuseGroupResult>());
 		} catch (Exception e) {

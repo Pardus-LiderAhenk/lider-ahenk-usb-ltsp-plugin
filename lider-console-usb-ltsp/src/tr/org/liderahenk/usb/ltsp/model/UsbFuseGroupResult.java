@@ -19,6 +19,9 @@ public class UsbFuseGroupResult implements Serializable {
 
 	private Date createDate;
 
+	public UsbFuseGroupResult() {
+	}
+
 	public UsbFuseGroupResult(Long id, String username, String uid, Integer statusCode, Date createDate) {
 		super();
 		this.id = id;
@@ -55,9 +58,13 @@ public class UsbFuseGroupResult implements Serializable {
 	public StatusCode getStatusCode() {
 		return StatusCode.getType(statusCode);
 	}
-
-	public void setStatusCode(Integer statusCode) {
-		this.statusCode = statusCode;
+	
+	public void setStatusCode(StatusCode statusCode) {
+		if (statusCode == null) {
+			this.statusCode = null;
+		} else {
+			this.statusCode = statusCode.getId();
+		}
 	}
 
 	public Date getCreateDate() {

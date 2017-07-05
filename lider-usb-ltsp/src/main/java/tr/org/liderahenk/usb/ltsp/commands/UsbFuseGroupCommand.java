@@ -37,16 +37,18 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 		return resultFactory.create(CommandResultStatus.OK, new ArrayList<String>(), this);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onTaskUpdate(ICommandExecutionResult result) {
+		ObjectMapper mapper = new ObjectMapper();
 		try {
-			Map<String, Object> responseData = new ObjectMapper().readValue(result.getResponseData(), 0,
+			Map<String, Object> responseData = mapper.readValue(result.getResponseData(), 0,
 					result.getResponseData().length, new TypeReference<HashMap<String, Object>>() {
 					});
 			if (responseData.get("fuse-group-results") != null) {
-				List<AgentUsbFuseGroupResult> res = (List<AgentUsbFuseGroupResult>) responseData
-						.get("fuse-group-results");
+				logger.error("JSON:" + responseData.get("fuse-group-results").toString());;
+				List<AgentUsbFuseGroupResult> res = mapper.readValue(responseData.get("fuse-group-results").toString(),
+						new TypeReference<List<AgentUsbFuseGroupResult>>() {
+						});
 				for (AgentUsbFuseGroupResult r : res) {
 					UsbFuseGroupResult obj = new UsbFuseGroupResult(null, r.getUsername(),
 							result.getCommandExecution().getUid(),
