@@ -24,7 +24,7 @@ class Fusegroup(AbstractPlugin):
 
     def does_group_exist(self, groupname):
         result_code, p_out, p_err = self.execute('getent group \'{0}\' /etc/passwd'.format(groupname))
-        if p_err == 0 and p_out == 1:
+        if p_out:
             return True
         else:
             return False
