@@ -51,7 +51,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 	private TableViewer tableViewer;
 	private TableFilter tableFilter;
 	private Text txtSearch;
-	private Button btnRefreshAgent;
+	private Button btnRefresh;
 	private Composite buttonComposite;
 
 	@Override
@@ -143,7 +143,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 
 		// Username
 		TableViewerColumn usernameColumn = SWTResourceManager.createTableViewerColumn(tableViewer, Messages.getString("USERNAME"),
-				200);
+				300);
 		usernameColumn.getColumn().setAlignment(SWT.LEFT);
 		usernameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -157,7 +157,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 
 		// Agent UID
 		TableViewerColumn ipColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
-				Messages.getString("AGENT"), 150);
+				Messages.getString("AGENT"), 300);
 		ipColumn.getColumn().setAlignment(SWT.LEFT);
 		ipColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -171,7 +171,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 
 		// Status code
 		TableViewerColumn macColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
-				Messages.getString("STATUS_CODE"), 50);
+				Messages.getString("STATUS_CODE"), 150);
 		macColumn.getColumn().setAlignment(SWT.LEFT);
 		macColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -207,12 +207,12 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 		buttonComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		buttonComposite.setLayout(new GridLayout(2, false));
 
-		btnRefreshAgent = new Button(buttonComposite, SWT.NONE);
-		btnRefreshAgent.setText(Messages.getString("REFRESH"));
-		btnRefreshAgent.setImage(
+		btnRefresh = new Button(buttonComposite, SWT.NONE);
+		btnRefresh.setText(Messages.getString("REFRESH"));
+		btnRefresh.setImage(
 				SWTResourceManager.getImage(LiderConstants.PLUGIN_IDS.LIDER_CONSOLE_CORE, "icons/16/refresh.png"));
-		btnRefreshAgent.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-		btnRefreshAgent.addSelectionListener(new SelectionListener() {
+		btnRefresh.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+		btnRefresh.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				refresh();
@@ -232,7 +232,12 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 	private void populateTable() {
 		try {
 			IResponse response = TaskRestUtils.execute(UsbLtspConstants.PLUGIN_NAME, UsbLtspConstants.PLUGIN_VERSION, UsbLtspConstants.TASKS.LIST_USB_FUSE_GROUP_STATUS, false);
-			List<UsbFuseGroupResult> results = (List<UsbFuseGroupResult>) response.getResultMap().get("fuse-group-results");
+			List<UsbFuseGroupResult> results = null;
+			if (response.getResultMap().get("fuse-group-results") != null) {
+				// TODO
+				// TODO
+				results = (List<UsbFuseGroupResult>) response.getResultMap().get("fuse-group-results");
+			}
 			tableViewer.setInput(results != null ? results : new ArrayList<UsbFuseGroupResult>());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

@@ -1,7 +1,9 @@
 package tr.org.liderahenk.usb.ltsp.commands;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -17,6 +19,9 @@ import tr.org.liderahenk.lider.core.api.service.ICommandContext;
 import tr.org.liderahenk.lider.core.api.service.ICommandResult;
 import tr.org.liderahenk.lider.core.api.service.ICommandResultFactory;
 import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
+import tr.org.liderahenk.usb.ltsp.entities.UsbFuseGroupResult;
+import tr.org.liderahenk.usb.ltsp.enums.StatusCode;
+import tr.org.liderahenk.usb.ltsp.model.AgentUsbFuseGroupResult;
 import tr.org.liderahenk.usb.ltsp.plugininfo.PluginInfoImpl;
 
 public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
@@ -32,16 +37,23 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 		return resultFactory.create(CommandResultStatus.OK, new ArrayList<String>(), this);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onTaskUpdate(ICommandExecutionResult result) {
 		try {
-			Map<String, Object> parameterMap = result.getCommandExecution().getCommand().getTask().getParameterMap();
 			Map<String, Object> responseData = new ObjectMapper().readValue(result.getResponseData(), 0,
 					result.getResponseData().length, new TypeReference<HashMap<String, Object>>() {
 					});
-			Object obj = responseData.get("fuse-group-results");
-			logger.error("Type: " + obj.getClass());
-			// TODO
+			if (responseData.get("fuse-group-results") != null) {
+				List<AgentUsbFuseGroupResult> res = (List<AgentUsbFuseGroupResult>) responseData
+						.get("fuse-group-results");
+				for (AgentUsbFuseGroupResult r : res) {
+					UsbFuseGroupResult obj = new UsbFuseGroupResult(null, r.getUsername(),
+							result.getCommandExecution().getUid(),
+							StatusCode.getType(Integer.parseInt(r.getStatusCode())), new Date());
+					dbService.save(obj);
+				}
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
