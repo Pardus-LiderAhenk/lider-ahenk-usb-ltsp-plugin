@@ -24,7 +24,7 @@ class Fusegroup(AbstractPlugin):
 
     def does_group_exist(self, groupname):
         result_code, p_out, p_err = self.execute('getent group \'{0}\' /etc/passwd'.format(groupname))
-        if p_err == 0 and p_out == 1:
+        if p_out:
             return True
         else:
             return False
@@ -44,7 +44,7 @@ class Fusegroup(AbstractPlugin):
                     self.logger.debug('User {0} does not exist'.format(user))
                     data = dict()
                     data['username'] = user
-                    data['statusCode'] = 3
+                    data['statusCode'] = "3"
                     data_list.append(data)
                     err = 1
                     continue
@@ -52,7 +52,7 @@ class Fusegroup(AbstractPlugin):
                     self.logger.debug('Fuse group does not exist')
                     data = dict()
                     data['username'] = user
-                    data['statusCode'] = 2
+                    data['statusCode'] = "2"
                     data_list.append(data)
                     err = 1
                     continue
@@ -63,10 +63,10 @@ class Fusegroup(AbstractPlugin):
                     result_code, p_out, p_err = self.execute('adduser {0} fuse'.format(user))
                     if result_code == 0:
                         self.logger.debug('User {0} added to fuse group'.format(user))
-                        data['statusCode'] = 1
+                        data['statusCode'] = "1"
                     else:
                         self.logger.error('A problem occurred while adding user {0} to fuse group'.format(user))
-                        data['statusCode'] = 4
+                        data['statusCode'] = "4"
                         err = 1
 
                     if self.task['endDate']:
@@ -76,16 +76,16 @@ class Fusegroup(AbstractPlugin):
                     result_code, p_out, p_err = self.execute('deluser {0} fuse'.format(user))
                     if result_code == 0:
                         self.logger.debug('User {0} removed from fuse group'.format(user))
-                        data['statusCode'] = 0
+                        data['statusCode'] = "0"
                     else:
                         self.logger.error('A problem occurred while removing user {0} from fuse group'.format(user))
-                        data['statusCode'] = 4
+                        data['statusCode'] = "4"
                         err = 1
                 data_list.append(data)
                 continue
 
             result = dict()
-            result['fuse-group-results'] = data_list
+            result['fuse-group-results'] = json.dumps(data_list)
             if err == 1:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='USB hakları düzenlenemedi.',
