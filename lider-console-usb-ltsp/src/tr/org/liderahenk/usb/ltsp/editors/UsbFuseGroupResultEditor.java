@@ -1,8 +1,10 @@
 package tr.org.liderahenk.usb.ltsp.editors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -234,9 +236,9 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 			IResponse response = TaskRestUtils.execute(UsbLtspConstants.PLUGIN_NAME, UsbLtspConstants.PLUGIN_VERSION, UsbLtspConstants.TASKS.LIST_USB_FUSE_GROUP_STATUS, false);
 			List<UsbFuseGroupResult> results = null;
 			if (response.getResultMap().get("fuse-group-results") != null) {
-				// TODO
-				// TODO
-				results = (List<UsbFuseGroupResult>) response.getResultMap().get("fuse-group-results");
+				ObjectMapper mapper = new ObjectMapper();
+				String str = response.getResultMap().get("fuse-group-results").toString();
+				results = Arrays.asList(mapper.readValue(str, UsbFuseGroupResult[].class));
 			}
 			tableViewer.setInput(results != null ? results : new ArrayList<UsbFuseGroupResult>());
 		} catch (Exception e) {

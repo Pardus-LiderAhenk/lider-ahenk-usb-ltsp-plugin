@@ -15,7 +15,7 @@ import javax.persistence.UniqueConstraint;
 import tr.org.liderahenk.usb.ltsp.enums.StatusCode;
 
 @Entity
-@Table(name = "P_USB_FUSE_GROUP_RESULT", uniqueConstraints = @UniqueConstraint(columnNames = { "USERNAME", "UID" }))
+@Table(name = "P_USB_FUSE_GROUP_RESULT"/*, uniqueConstraints = @UniqueConstraint(columnNames = { "USERNAME", "UID" })*/)
 public class UsbFuseGroupResult implements Serializable {
 
 	private static final long serialVersionUID = -4130227601711334080L;
@@ -94,35 +94,35 @@ public class UsbFuseGroupResult implements Serializable {
 		this.createDate = createDate;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((uid == null) ? 0 : uid.hashCode());
-		result = prime * result + ((username == null) ? 0 : username.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		UsbFuseGroupResult other = (UsbFuseGroupResult) obj;
-		if (uid == null) {
-			if (other.uid != null)
-				return false;
-		} else if (!uid.equals(other.uid))
-			return false;
-		if (username == null) {
-			if (other.username != null)
-				return false;
-		} else if (!username.equals(other.username))
-			return false;
-		return true;
-	}
+//	@Override
+//	public int hashCode() {
+//		final int prime = 31;
+//		int result = 1;
+//		result = prime * result + ((uid == null) ? 0 : uid.hashCode());
+//		result = prime * result + ((username == null) ? 0 : username.hashCode());
+//		return result;
+//	}
+//
+//	@Override
+//	public boolean equals(Object obj) {
+//		if (this == obj)
+//			return true;
+//		if (obj == null)
+//			return false;
+//		if (getClass() != obj.getClass())
+//			return false;
+//		UsbFuseGroupResult other = (UsbFuseGroupResult) obj;
+//		if (uid == null) {
+//			if (other.uid != null)
+//				return false;
+//		} else if (!uid.equals(other.uid))
+//			return false;
+//		if (username == null) {
+//			if (other.username != null)
+//				return false;
+//		} else if (!username.equals(other.username))
+//			return false;
+//		return true;
+//	}
 
 }

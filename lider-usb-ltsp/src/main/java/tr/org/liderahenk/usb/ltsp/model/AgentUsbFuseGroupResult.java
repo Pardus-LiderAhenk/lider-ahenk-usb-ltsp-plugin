@@ -10,8 +10,10 @@ public class AgentUsbFuseGroupResult implements Serializable {
 
 	private String statusCode;
 
+	public AgentUsbFuseGroupResult() {
+	}
+
 	public AgentUsbFuseGroupResult(String username, String statusCode) {
-		super();
 		this.username = username;
 		this.statusCode = statusCode;
 	}
