@@ -53,7 +53,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	private Text txtRemoveFuseGroupDate;
 
 	public UsbFuseGroupDialog(Shell parentShell, Set<String> dnSet) {
-		super(parentShell, dnSet);
+		super(parentShell, dnSet, false, true);
 	}
 
 	@Override
@@ -71,13 +71,13 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	}
 
 	private void createTableArea(Composite parent) {
-		
+
 		Label lblTable = new Label(parent, SWT.NONE);
 		lblTable.setFont(SWTResourceManager.getFont("Sans", 9, SWT.BOLD));
 		lblTable.setText(Messages.getString("SELECT_USER"));
-		
+
 		createTableFilterArea(parent);
-		
+
 		GridData dataSearchGrid = new GridData();
 		dataSearchGrid.grabExcessHorizontalSpace = true;
 		dataSearchGrid.horizontalAlignment = GridData.FILL;
@@ -110,7 +110,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		tableViewer.addFilter(tableFilter);
 		tableViewer.refresh();
 	}
-	
+
 	private void createTableFilterArea(Composite parent) {
 		Composite filterContainer = new Composite(parent, SWT.NONE);
 		filterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -201,7 +201,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-		
+
 		btnRemoveFuseGroup = new Button(rbComposite, SWT.RADIO);
 		btnRemoveFuseGroup.setText(Messages.getString("REMOVE_FUSE_GROUP"));
 		btnRemoveFuseGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -252,7 +252,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-		
+
 		toggleEndDateInputs();
 	}
 
@@ -343,6 +343,16 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	@Override
 	public String getPluginVersion() {
 		return UsbLtspConstants.PLUGIN_VERSION;
+	}
+
+	@Override
+	public String getMailSubject() {
+		return "USB Yetki Düzenleme";
+	}
+
+	@Override
+	public String getMailContent() {
+		return "cn={ahenk} istemcisinde aşağıdaki kullanıcılar için USB yetkileri düzenlenmiştir: \n {usernames} ";
 	}
 
 }
