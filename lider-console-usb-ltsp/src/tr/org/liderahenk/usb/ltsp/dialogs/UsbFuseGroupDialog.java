@@ -44,7 +44,7 @@ import tr.org.liderahenk.usb.ltsp.model.CrontabExpression;
 public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
 	private TableViewer tableViewer;
-	private TableFilter tableFilter;
+	// private TableFilter tableFilter;
 	private Text txtSearch;
 	private Button btnAddFuseGroup;
 	private Button btnRemoveFuseGroup;
@@ -95,7 +95,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		table.getVerticalBar().setEnabled(true);
 		table.getVerticalBar().setVisible(true);
 		tableViewer.setContentProvider(new ArrayContentProvider());
-		populateTable();
+		// populateTable();
 
 		GridData gridData = new GridData();
 		gridData.verticalAlignment = GridData.FILL;
@@ -106,9 +106,9 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		gridData.horizontalAlignment = GridData.FILL;
 		tableViewer.getControl().setLayoutData(gridData);
 
-		tableFilter = new TableFilter();
-		tableViewer.addFilter(tableFilter);
-		tableViewer.refresh();
+		// tableFilter = new TableFilter();
+		// tableViewer.addFilter(tableFilter);
+		// tableViewer.refresh();
 	}
 
 	private void createTableFilterArea(Composite parent) {
@@ -129,8 +129,28 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		txtSearch.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				tableFilter.setSearchText(txtSearch.getText());
-				tableViewer.refresh();
+				// tableFilter.setSearchText(txtSearch.getText());
+				try {
+					List<LdapEntry> users = new ArrayList<LdapEntry>();
+					if (txtSearch.getText() == null || txtSearch.getText().trim().isEmpty()) {
+						tableViewer.setInput(users);
+						tableViewer.refresh();
+						return;
+					}
+					// Create filter for cn, mail, uid
+					StringBuffer filter = new StringBuffer();
+					filter.append("(|");
+					filter.append("(cn=*").append(txtSearch.getText()).append("*)");
+					filter.append("(mail=*").append(txtSearch.getText()).append("*)");
+					filter.append("(uid=*").append(txtSearch.getText()).append("*)");
+					filter.append(")");
+					// Do search
+					users = LdapUtils.getInstance().findUsers(filter.toString(), new String[] { "uid", "cn" });
+					tableViewer.setInput(users);
+					tableViewer.refresh();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 	}
@@ -161,11 +181,12 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		});
 	}
 
-	private void populateTable() {
-		List<LdapEntry> users = LdapUtils.getInstance().findUsers(null, new String[] { "uid", "cn" });
-		tableViewer.setInput(users);
-		tableViewer.refresh();
-	}
+	// private void populateTable() {
+	// List<LdapEntry> users = LdapUtils.getInstance().findUsers(null, new
+	// String[] { "uid", "cn" });
+	// tableViewer.setInput(users);
+	// tableViewer.refresh();
+	// }
 
 	private TableViewerColumn createTableViewerColumn(String title, int bound) {
 		final TableViewerColumn viewerColumn = new TableViewerColumn(tableViewer, SWT.NONE);
