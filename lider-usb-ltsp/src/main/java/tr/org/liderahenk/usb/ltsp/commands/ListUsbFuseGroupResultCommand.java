@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
 import org.codehaus.jackson.map.ObjectMapper;
 
-import tr.org.liderahenk.lider.core.api.persistence.IPluginDbService;
-import tr.org.liderahenk.lider.core.api.persistence.PropertyOrder;
-import tr.org.liderahenk.lider.core.api.persistence.enums.OrderType;
 import tr.org.liderahenk.lider.core.api.plugin.ICommand;
 import tr.org.liderahenk.lider.core.api.service.ICommandContext;
 import tr.org.liderahenk.lider.core.api.service.ICommandResult;
@@ -27,25 +27,31 @@ public class ListUsbFuseGroupResultCommand implements ICommand {
 
 	private ICommandResultFactory resultFactory;
 	private PluginInfoImpl pluginInfo;
-	private IPluginDbService dbService;
+	private EntityManager entityManager;
+	
+	private static final String FIND_RESULTS = 
+			"SELECT r.USB_FUSE_GROUP_RESULT_ID, r.USERNAME, r.UID, r.STATE_CODE, r.CREATE_DATE "
+			+ "FROM P_USB_FUSE_GROUP_RESULT r "
+			+ "INNER JOIN (SELECT USERNAME, UID, MAX(CREATE_DATE), CREATE_DATE FROM P_USB_FUSE_GROUP_RESULT GROUP BY USERNAME, UID) t "
+			+ "ON (r.USERNAME = t.USERNAME AND r.UID = t.UID AND r.CREATE_DATE = t.CREATE_DATE) "
+			+ "WHERE 1=1 #CONDITION# "
+			+ "ORDER BY r.CREATE_DATE DESC";
+	
+	private static final String UID_CONDITION = "AND r.uid = ?1";
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ICommandResult execute(ICommandContext context) throws Exception {
 		Map<String, Object> parameterMap = context.getRequest().getParameterMap();
 		String uid = (String) parameterMap.get("uid");
 
-		Map<String, Object> propertiesMap = null;
-		List<PropertyOrder> orders = new ArrayList<PropertyOrder>();
-		orders.add(new PropertyOrder("createDate", OrderType.DESC));
-
+		String sql = FIND_RESULTS.replace("#CONDITION#", uid != null && !uid.isEmpty() ? UID_CONDITION : "");
+		Query query = entityManager.createNativeQuery(sql, UsbFuseGroupResult.class);
 		if (uid != null && !uid.isEmpty()) {
-			orders.add(new PropertyOrder("uid", OrderType.DESC));
-			propertiesMap = new HashMap<String, Object>();
-			propertiesMap.put("uid", uid);
+			query.setParameter(1, uid);
 		}
-
-		List<UsbFuseGroupResult> result = dbService.findByProperties(UsbFuseGroupResult.class, propertiesMap, orders,
-				null);
+		
+		List<UsbFuseGroupResult> result = query.getResultList();
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap.put("fuse-group-results", new ObjectMapper().writeValueAsString(result));
 
@@ -85,8 +91,8 @@ public class ListUsbFuseGroupResultCommand implements ICommand {
 		this.pluginInfo = pluginInfo;
 	}
 
-	public void setDbService(IPluginDbService dbService) {
-		this.dbService = dbService;
+	public void setEntityManager(EntityManager entityManager) {
+		this.entityManager = entityManager;
 	}
 
 }
