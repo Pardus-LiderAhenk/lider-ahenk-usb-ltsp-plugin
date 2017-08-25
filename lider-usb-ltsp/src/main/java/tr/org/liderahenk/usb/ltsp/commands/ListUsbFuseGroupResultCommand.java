@@ -9,6 +9,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.lider.core.api.plugin.ICommand;
 import tr.org.liderahenk.lider.core.api.service.ICommandContext;
@@ -25,6 +27,8 @@ import tr.org.liderahenk.usb.ltsp.plugininfo.PluginInfoImpl;
  */
 public class ListUsbFuseGroupResultCommand implements ICommand {
 
+	private static final Logger logger = LoggerFactory.getLogger(ListUsbFuseGroupResultCommand.class);
+	
 	private ICommandResultFactory resultFactory;
 	private PluginInfoImpl pluginInfo;
 	private EntityManager entityManager;
@@ -32,8 +36,8 @@ public class ListUsbFuseGroupResultCommand implements ICommand {
 	private static final String FIND_RESULTS = 
 			"SELECT r.USB_FUSE_GROUP_RESULT_ID, r.USERNAME, r.UID, r.STATE_CODE, r.CREATE_DATE "
 			+ "FROM P_USB_FUSE_GROUP_RESULT r "
-			+ "INNER JOIN (SELECT USERNAME, UID, MAX(CREATE_DATE), CREATE_DATE FROM P_USB_FUSE_GROUP_RESULT GROUP BY USERNAME, UID) t "
-			+ "ON (r.USERNAME = t.USERNAME AND r.UID = t.UID AND r.CREATE_DATE = t.CREATE_DATE) "
+			+ "INNER JOIN (SELECT USERNAME, UID, MAX(CREATE_DATE) AS MAX_DATE, CREATE_DATE FROM P_USB_FUSE_GROUP_RESULT GROUP BY USERNAME, UID) t "
+			+ "ON (r.USERNAME = t.USERNAME AND r.UID = t.UID AND r.CREATE_DATE = t.MAX_DATE) "
 			+ "WHERE 1=1 #CONDITION# "
 			+ "ORDER BY r.CREATE_DATE DESC";
 	
@@ -52,6 +56,7 @@ public class ListUsbFuseGroupResultCommand implements ICommand {
 		}
 		
 		List<UsbFuseGroupResult> result = query.getResultList();
+		logger.info("Number of fuse group results found: {0}", new Object[] {result.size()});
 		Map<String, Object> resultMap = new HashMap<String, Object>();
 		resultMap.put("fuse-group-results", new ObjectMapper().writeValueAsString(result));
 
