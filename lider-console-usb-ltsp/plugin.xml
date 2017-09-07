@@ -141,7 +141,8 @@
 	<extension
   		point="tr.org.liderahenk.liderconsole.core.taskmenu">
   		<taskItem label="%usb.fuse.group" pluginName="usb-ltsp" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.UsbFuseGroupTask" selectionType="multi" description="Kullanıcılara USB yetkisi vermek ya da yetkiyi kaldırmak için tıklayınız..." imagePath="usb.png"/>
-  		<taskItem label="%usb.fuse.group.state" pluginName="usb-ltsp" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.ListUsbFuseGroupStateTask" selectionType="single" description="Seçilen Ahenk'te yapılan USB yetki işlemlerini görüntülemek için tıklayınız..." imagePath="usb.png"/>
+  	<!--	<taskItem label="%usb.fuse.group.state" pluginName="usb-ltsp" pluginVersion="1.0.0" taskCommandId="tr.org.liderahenk.liderconsole.commands.ListUsbFuseGroupStateTask" selectionType="single" description="Seçilen Ahenk'te yapılan USB yetki işlemlerini görüntülemek için tıklayınız..." imagePath="usb.png"/>
+  	-->
   	</extension>
   	
 	<!-- Add extension point contribution for i18n messages -->
