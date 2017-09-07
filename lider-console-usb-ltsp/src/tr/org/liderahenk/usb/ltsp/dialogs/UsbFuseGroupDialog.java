@@ -44,7 +44,7 @@ import tr.org.liderahenk.usb.ltsp.model.CrontabExpression;
 public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
 	private TableViewer tableViewer;
-	private TableFilter tableFilter;
+	// private TableFilter tableFilter;
 	private Text txtSearch;
 	private Button btnAddFuseGroup;
 	private Button btnRemoveFuseGroup;
@@ -53,7 +53,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	private Text txtRemoveFuseGroupDate;
 
 	public UsbFuseGroupDialog(Shell parentShell, Set<String> dnSet) {
-		super(parentShell, dnSet);
+		super(parentShell, dnSet, false, true);
 	}
 
 	@Override
@@ -71,13 +71,13 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	}
 
 	private void createTableArea(Composite parent) {
-		
+
 		Label lblTable = new Label(parent, SWT.NONE);
 		lblTable.setFont(SWTResourceManager.getFont("Sans", 9, SWT.BOLD));
 		lblTable.setText(Messages.getString("SELECT_USER"));
-		
+
 		createTableFilterArea(parent);
-		
+
 		GridData dataSearchGrid = new GridData();
 		dataSearchGrid.grabExcessHorizontalSpace = true;
 		dataSearchGrid.horizontalAlignment = GridData.FILL;
@@ -95,7 +95,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		table.getVerticalBar().setEnabled(true);
 		table.getVerticalBar().setVisible(true);
 		tableViewer.setContentProvider(new ArrayContentProvider());
-		populateTable();
+		// populateTable();
 
 		GridData gridData = new GridData();
 		gridData.verticalAlignment = GridData.FILL;
@@ -106,11 +106,11 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		gridData.horizontalAlignment = GridData.FILL;
 		tableViewer.getControl().setLayoutData(gridData);
 
-		tableFilter = new TableFilter();
-		tableViewer.addFilter(tableFilter);
-		tableViewer.refresh();
+		// tableFilter = new TableFilter();
+		// tableViewer.addFilter(tableFilter);
+		// tableViewer.refresh();
 	}
-	
+
 	private void createTableFilterArea(Composite parent) {
 		Composite filterContainer = new Composite(parent, SWT.NONE);
 		filterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -129,8 +129,28 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		txtSearch.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				tableFilter.setSearchText(txtSearch.getText());
-				tableViewer.refresh();
+				// tableFilter.setSearchText(txtSearch.getText());
+				try {
+					List<LdapEntry> users = new ArrayList<LdapEntry>();
+					if (txtSearch.getText() == null || txtSearch.getText().trim().isEmpty()) {
+						tableViewer.setInput(users);
+						tableViewer.refresh();
+						return;
+					}
+					// Create filter for cn, mail, uid
+					StringBuffer filter = new StringBuffer();
+					filter.append("(|");
+					filter.append("(cn=*").append(txtSearch.getText()).append("*)");
+					filter.append("(mail=*").append(txtSearch.getText()).append("*)");
+					filter.append("(uid=*").append(txtSearch.getText()).append("*)");
+					filter.append(")");
+					// Do search
+					users = LdapUtils.getInstance().findUsers(filter.toString(), new String[] { "uid", "cn" });
+					tableViewer.setInput(users);
+					tableViewer.refresh();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 	}
@@ -161,11 +181,12 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		});
 	}
 
-	private void populateTable() {
-		List<LdapEntry> users = LdapUtils.getInstance().findUsers(null, new String[] { "uid", "cn" });
-		tableViewer.setInput(users);
-		tableViewer.refresh();
-	}
+	// private void populateTable() {
+	// List<LdapEntry> users = LdapUtils.getInstance().findUsers(null, new
+	// String[] { "uid", "cn" });
+	// tableViewer.setInput(users);
+	// tableViewer.refresh();
+	// }
 
 	private TableViewerColumn createTableViewerColumn(String title, int bound) {
 		final TableViewerColumn viewerColumn = new TableViewerColumn(tableViewer, SWT.NONE);
@@ -201,7 +222,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-		
+
 		btnRemoveFuseGroup = new Button(rbComposite, SWT.RADIO);
 		btnRemoveFuseGroup.setText(Messages.getString("REMOVE_FUSE_GROUP"));
 		btnRemoveFuseGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -252,7 +273,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
-		
+
 		toggleEndDateInputs();
 	}
 
@@ -343,6 +364,16 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	@Override
 	public String getPluginVersion() {
 		return UsbLtspConstants.PLUGIN_VERSION;
+	}
+
+	@Override
+	public String getMailSubject() {
+		return "USB Yetki Düzenleme";
+	}
+
+	@Override
+	public String getMailContent() {
+		return "cn={ahenk} istemcisinde aşağıdaki kullanıcılar için USB yetkileri düzenlenmiştir: \n {usernames} ";
 	}
 
 }

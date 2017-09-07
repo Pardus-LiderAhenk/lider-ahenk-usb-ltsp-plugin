@@ -86,6 +86,17 @@ class Fusegroup(AbstractPlugin):
 
             result = dict()
             result['fuse-group-results'] = json.dumps(data_list)
+            if self.context.is_mail_send():
+                mail_content = self.context.get_mail_content()
+                if mail_content.__contains__('{usernames}'):
+                    mail_content = str(mail_content).replace('{usernames}', str(self.task['usernames']))
+                if mail_content.__contains__('{ahenk}'):
+                    mail_content = str(mail_content).replace('{ahenk}', str(self.Ahenk.dn()))
+                self.context.set_mail_content(mail_content)
+                result['mail_content'] = str(self.context.get_mail_content())
+                result['mail_subject'] = str(self.context.get_mail_subject())
+                result['mail_send'] = self.context.is_mail_send()
+
             if err == 1:
                 self.context.create_response(code=self.message_code.TASK_ERROR.value,
                                              message='USB hakları düzenlenemedi.',
