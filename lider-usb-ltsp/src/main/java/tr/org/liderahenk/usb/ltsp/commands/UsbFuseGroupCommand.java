@@ -53,8 +53,11 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 						new TypeReference<List<AgentUsbFuseGroupResult>>() {
 						});
 				for (AgentUsbFuseGroupResult r : res) {
-					
-					Date endDate = cronToDate(result.getCommandExecution().getCommand().getTask().getParameterMap().get("endDate").toString());
+					Object endDateParam = result.getCommandExecution().getCommand().getTask().getParameterMap().get("endDate");
+					Date endDate = null;
+					if (endDateParam != null && !endDateParam.toString().isEmpty()) {
+						endDate = cronToDate(endDateParam.toString());
+					}
 
 					UsbFuseGroupResult obj = new UsbFuseGroupResult(null, r.getUsername(),
 							result.getCommandExecution().getUid(),
