@@ -19,16 +19,19 @@ public class UsbFuseGroupResult implements Serializable {
 
 	private Date createDate;
 
+	private Date endDate;
+
 	public UsbFuseGroupResult() {
 	}
 
-	public UsbFuseGroupResult(Long id, String username, String uid, Integer statusCode, Date createDate) {
+	public UsbFuseGroupResult(Long id, String username, String uid, Integer statusCode, Date createDate, Date endDate) {
 		super();
 		this.id = id;
 		this.username = username;
 		this.uid = uid;
 		this.statusCode = statusCode;
 		this.createDate = createDate;
+		this.endDate = endDate;
 	}
 
 	public Long getId() {
@@ -73,6 +76,14 @@ public class UsbFuseGroupResult implements Serializable {
 
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 }
