@@ -47,14 +47,19 @@ import tr.org.liderahenk.usb.ltsp.model.UsbFuseGroupResult;
  *
  */
 public class UsbFuseGroupResultEditor extends EditorPart {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(UsbFuseGroupResultEditor.class);
-	
+
 	private TableViewer tableViewer;
-	private TableFilter tableFilter;
+	private TableFilter tablePriviligeFilter;
+	private TableFilter tableTextFilter;
 	private Text txtSearch;
 	private Button btnRefresh;
 	private Composite buttonComposite;
+
+	private Button btnPrivileged;
+	private Button btnUnprivileged;
+
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
@@ -68,7 +73,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
 		setSite(site);
 		setInput(input);
-		setPartName(((DefaultEditorInput) input).getLabel());		
+		setPartName(((DefaultEditorInput) input).getLabel());
 	}
 
 	@Override
@@ -86,9 +91,9 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 		parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		parent.setLayout(new GridLayout(1, false));
 		createButtonsArea(parent);
-		createTableArea(parent);		
+		createTableArea(parent);
 	}
-	
+
 	private void createTableArea(final Composite parent) {
 
 		createTableFilterArea(parent);
@@ -112,11 +117,15 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 		createTableColumns();
 		populateTable();
 
-		tableFilter = new TableFilter();
-		tableViewer.addFilter(tableFilter);
+		tableTextFilter = new TableFilter();
+		tableViewer.addFilter(tableTextFilter);
+
+		tablePriviligeFilter = new TableFilter();
+		tableViewer.addFilter(tablePriviligeFilter);
+		
 		tableViewer.refresh();
 	}
-	
+
 	private void createTableFilterArea(Composite parent) {
 		Composite filterContainer = new Composite(parent, SWT.NONE);
 		filterContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -135,17 +144,45 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 		txtSearch.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				tableFilter.setSearchText(txtSearch.getText());
-				tableViewer.refresh();
+				filterTable(null);
 			}
 		});
+
+		btnPrivileged = new Button(filterContainer, SWT.CHECK);
+		btnPrivileged.setText(Messages.getString("SHOW_AUTHORIZED"));
+		btnPrivileged.setSelection(true);
+		btnPrivileged.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				filterTable(btnPrivileged);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent event) {
+			}
+		});
+
+		btnUnprivileged = new Button(filterContainer, SWT.CHECK);
+		btnUnprivileged.setText(Messages.getString("SHOW_UNAUTHORIZED"));
+		btnUnprivileged.setSelection(true);
+		btnUnprivileged.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				filterTable(btnUnprivileged);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent event) {
+			}
+		});
+
 	}
-	
+
 	private void createTableColumns() {
 
 		// Username
-		TableViewerColumn usernameColumn = SWTResourceManager.createTableViewerColumn(tableViewer, Messages.getString("USERNAME"),
-				300);
+		TableViewerColumn usernameColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
+				Messages.getString("USERNAME"), 300);
 		usernameColumn.getColumn().setAlignment(SWT.LEFT);
 		usernameColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
@@ -201,8 +238,23 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 			}
 		});
 
+		// End date
+		TableViewerColumn endColumn = SWTResourceManager.createTableViewerColumn(tableViewer,
+				Messages.getString("END_DATE"), 100);
+		endColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof UsbFuseGroupResult) {
+					return ((UsbFuseGroupResult) element).getEndDate() != null
+							? SWTResourceManager.formatDate(((UsbFuseGroupResult) element).getEndDate()).split("\\s+")[0]
+									: Messages.getString("UNTITLED");
+				}
+				return Messages.getString("UNTITLED");
+			}
+		});
+
 	}
-	
+
 	private void createButtonsArea(final Composite parent) {
 
 		buttonComposite = new Composite(parent, GridData.FILL);
@@ -225,15 +277,16 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 			}
 		});
 	}
-	
+
 	public void refresh() {
 		populateTable();
 		tableViewer.refresh();
 	}
-	
+
 	private void populateTable() {
 		try {
-			IResponse response = TaskRestUtils.execute(UsbLtspConstants.PLUGIN_NAME, UsbLtspConstants.PLUGIN_VERSION, UsbLtspConstants.TASKS.LIST_USB_FUSE_GROUP_STATUS, false);
+			IResponse response = TaskRestUtils.execute(UsbLtspConstants.PLUGIN_NAME, UsbLtspConstants.PLUGIN_VERSION,
+					UsbLtspConstants.TASKS.LIST_USB_FUSE_GROUP_STATUS, false);
 			List<UsbFuseGroupResult> results = null;
 			if (response.getResultMap().get("fuse-group-results") != null) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -246,7 +299,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
 		}
 	}
-	
+
 	/**
 	 * Apply filter to table rows. (Search text can be agent DN, hostname, JID,
 	 * IP address or MAC address)
@@ -256,8 +309,15 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 
 		private String searchString;
 
-		public void setSearchText(String s) {
-			this.searchString = ".*" + s + ".*";
+		public void setSearchText(String s, boolean useRegex) {
+			if (s == null) {
+				searchString = null;
+			} else if (useRegex) {
+				this.searchString = ".*" + s + ".*";
+				
+			} else {
+				this.searchString = s;
+			}
 		}
 
 		@Override
@@ -266,12 +326,30 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 				return true;
 			}
 			UsbFuseGroupResult result = (UsbFuseGroupResult) element;
-			return result.getUsername().matches(searchString) || result.getUid().matches(searchString);
+			return result.getUsername().matches(searchString) || result.getUid().matches(searchString) || result.getStatusCode().toString().equals(searchString);
 		}
 	}
 
 	@Override
 	public void setFocus() {
+	}
+	
+	private void filterTable(Button btnPrivilegeFilter) {
+		tableTextFilter.setSearchText(txtSearch.getText(), true);
+		
+		if (btnPrivileged.getSelection() && btnUnprivileged.getSelection()) {
+			tablePriviligeFilter.setSearchText(null, false);
+		} else if (!btnPrivileged.getSelection() && btnUnprivileged.getSelection()) {
+			tablePriviligeFilter.setSearchText(StatusCode.UNPRIVILEGED.toString(), false);
+		} else if (btnPrivileged.getSelection() && !btnUnprivileged.getSelection()) {
+			tablePriviligeFilter.setSearchText(StatusCode.PRIVILEGED.toString(), false);
+		} else {
+			if (btnPrivilegeFilter != null) {
+				btnPrivilegeFilter.setSelection(true);
+			}
+		}
+		
+		tableViewer.refresh();
 	}
 
 }
