@@ -10,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
 
 import tr.org.liderahenk.usb.ltsp.enums.StatusCode;
 
@@ -38,16 +37,21 @@ public class UsbFuseGroupResult implements Serializable {
 	@Column(name = "CREATE_DATE", nullable = false)
 	private Date createDate;
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "END_DATE", nullable = true)
+	private Date endDate;
+
 	public UsbFuseGroupResult() {
 	}
 
-	public UsbFuseGroupResult(Long id, String username, String uid, StatusCode statusCode, Date createDate) {
+	public UsbFuseGroupResult(Long id, String username, String uid, StatusCode statusCode, Date createDate, Date endDate) {
 		super();
 		this.id = id;
 		this.username = username;
 		this.uid = uid;
 		setStatusCode(statusCode);
 		this.createDate = createDate;
+		this.endDate = endDate;
 	}
 
 	public Long getId() {
@@ -92,6 +96,14 @@ public class UsbFuseGroupResult implements Serializable {
 
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 //	@Override
