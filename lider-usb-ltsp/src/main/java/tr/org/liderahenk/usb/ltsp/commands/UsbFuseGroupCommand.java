@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -109,8 +110,40 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 	
 	public static Date cronToDate(String cronExpression) throws ParseException {
 		String[] splittedCron = cronExpression.split("\\s+");
-		String dateString = (splittedCron[2].length() < 2 ? "0" + splittedCron[2] : splittedCron[2]) + "/" + (splittedCron[3].length() < 2 ? "0" + splittedCron[3] : splittedCron[3]) + "/20" + splittedCron[1];
-		DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+		
+		String minute = "";
+		if (splittedCron[0].equals("*")) {
+			minute = "00";
+		} else {
+			minute = splittedCron[0].length() < 2 ? "0" + splittedCron[0] : splittedCron[0];
+		}
+		
+		String hour = "";
+		if (splittedCron[1].equals("*")) {
+			hour = "00";
+		} else {
+			hour = splittedCron[1].length() < 2 ? "0" + splittedCron[1] : splittedCron[1];
+		}
+
+		String day = "";
+		if (splittedCron[2].equals("*")) {
+			day = "01";
+		} else {
+			day = splittedCron[2].length() < 2 ? "0" + splittedCron[2] : splittedCron[2];
+		}
+		
+		String month = "";
+		if (splittedCron[3].equals("*")) {
+			month = "01";
+		} else {
+			month = (splittedCron[3].length() < 2 ? "0" + splittedCron[3] : splittedCron[3]);
+		}
+		
+		String year = splittedCron.length > 5 ? splittedCron[5] : Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+		
+		String dateString = ( day + "/" + month + "/" + year + " " + hour + ":" + minute + ":00");
+		
+		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date date = df.parse(dateString);
 
 		return date;

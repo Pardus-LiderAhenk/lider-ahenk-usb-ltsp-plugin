@@ -246,7 +246,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 			public String getText(Object element) {
 				if (element instanceof UsbFuseGroupResult) {
 					return ((UsbFuseGroupResult) element).getEndDate() != null
-							? SWTResourceManager.formatDate(((UsbFuseGroupResult) element).getEndDate()).split("\\s+")[0]
+							? SWTResourceManager.formatDate(((UsbFuseGroupResult) element).getEndDate())
 									: Messages.getString("UNTITLED");
 				}
 				return Messages.getString("UNTITLED");
