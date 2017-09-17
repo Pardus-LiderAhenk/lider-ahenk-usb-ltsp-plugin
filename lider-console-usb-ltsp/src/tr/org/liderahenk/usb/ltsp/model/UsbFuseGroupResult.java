@@ -16,6 +16,12 @@ public class UsbFuseGroupResult implements Serializable {
 	private String uid;
 
 	private Integer statusCode;
+	
+	private Long agentId;
+	
+	private String agentDn;
+	
+	private boolean deleted = false;
 
 	private Date createDate;
 
@@ -84,6 +90,34 @@ public class UsbFuseGroupResult implements Serializable {
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+
+	public Long getAgentId() {
+		return agentId;
+	}
+
+	public void setAgentId(Long agentId) {
+		this.agentId = agentId;
+	}
+
+	public String getAgentDn() {
+		return agentDn;
+	}
+
+	public void setAgentDn(String agentDn) {
+		this.agentDn = agentDn;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public void setStatusCode(Integer statusCode) {
+		this.statusCode = statusCode;
 	}
 
 }

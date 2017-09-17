@@ -1,11 +1,18 @@
 package tr.org.liderahenk.usb.ltsp.dialogs;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -30,19 +37,30 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
+import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
 import tr.org.liderahenk.liderconsole.core.ldap.model.LdapEntry;
-import tr.org.liderahenk.liderconsole.core.ldap.utils.LdapUtils;
+import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
+import tr.org.liderahenk.liderconsole.core.rest.responses.IResponse;
+import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
+import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.usb.ltsp.constants.UsbLtspConstants;
 import tr.org.liderahenk.usb.ltsp.enums.StatusCode;
 import tr.org.liderahenk.usb.ltsp.i18n.Messages;
 import tr.org.liderahenk.usb.ltsp.model.CrontabExpression;
+import tr.org.liderahenk.usb.ltsp.model.UsbFuseGroupResult;
 
 public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
+	private static final Logger logger = LoggerFactory.getLogger(UsbFuseGroupDialog.class);
 	private TableViewer tableViewer;
 	// private TableFilter tableFilter;
 	private Text txtSearch;
@@ -51,9 +69,15 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	private Button btnEnableRemoveFuseGroupDate;
 	private Button btnRemoveFuseGroupDate;
 	private Text txtRemoveFuseGroupDate;
+	
+	private List<String> dnList;
 
 	public UsbFuseGroupDialog(Shell parentShell, Set<String> dnSet) {
 		super(parentShell, dnSet, false, true);
+		
+		dnList = new ArrayList<String>(dnSet);
+		
+		subscribeEventHandler(taskStatusNotificationHandler);
 	}
 
 	@Override
@@ -67,7 +91,25 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		parent.setLayout(new GridLayout(1, false));
 		createTableArea(parent);
 		createInputArea(parent);
+		
+		getUserlistFromAgent();
+		
 		return null;
+	}
+
+	private void getUserlistFromAgent() {
+		try {
+
+			TaskRequest task = new TaskRequest(dnList, DNType.AHENK, getPluginName(), getPluginVersion(),
+					UsbLtspConstants.TASKS.GET_USERS,  null, null, null, new Date());
+			
+			IResponse response = TaskRestUtils.execute(task, false);
+			
+		} catch (Exception e) {
+			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
+			e.printStackTrace();
+		}
+		
 	}
 
 	private void createTableArea(Composite parent) {
@@ -76,7 +118,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		lblTable.setFont(SWTResourceManager.getFont("Sans", 9, SWT.BOLD));
 		lblTable.setText(Messages.getString("SELECT_USER"));
 
-		createTableFilterArea(parent);
+	//	createTableFilterArea(parent);
 
 		GridData dataSearchGrid = new GridData();
 		dataSearchGrid.grabExcessHorizontalSpace = true;
@@ -132,22 +174,22 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 				// tableFilter.setSearchText(txtSearch.getText());
 				try {
 					List<LdapEntry> users = new ArrayList<LdapEntry>();
-					if (txtSearch.getText() == null || txtSearch.getText().trim().isEmpty()) {
-						tableViewer.setInput(users);
-						tableViewer.refresh();
-						return;
-					}
-					// Create filter for cn, mail, uid
-					StringBuffer filter = new StringBuffer();
-					filter.append("(|");
-					filter.append("(cn=*").append(txtSearch.getText()).append("*)");
-					filter.append("(mail=*").append(txtSearch.getText()).append("*)");
-					filter.append("(uid=*").append(txtSearch.getText()).append("*)");
-					filter.append(")");
-					// Do search
-					users = LdapUtils.getInstance().findUsers(filter.toString(), new String[] { "uid", "cn" });
-					tableViewer.setInput(users);
-					tableViewer.refresh();
+//					if (txtSearch.getText() == null || txtSearch.getText().trim().isEmpty()) {
+//						tableViewer.setInput(users);
+//						tableViewer.refresh();
+//						return;
+//					}
+//					// Create filter for cn, mail, uid
+//					StringBuffer filter = new StringBuffer();
+//					filter.append("(|");
+//					filter.append("(cn=*").append(txtSearch.getText()).append("*)");
+//					filter.append("(mail=*").append(txtSearch.getText()).append("*)");
+//					filter.append("(uid=*").append(txtSearch.getText()).append("*)");
+//					filter.append(")");
+//					// Do search
+//					users = LdapUtils.getInstance().findUsers(filter.toString(), new String[] { "uid", "cn" });
+//					tableViewer.setInput(users);
+//					tableViewer.refresh();
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -161,8 +203,8 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		dnColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof LdapEntry) {
-					return ((LdapEntry) element).getDistinguishedName();
+				if (element instanceof UsbFuseGroupResult) {
+					return ((UsbFuseGroupResult) element).getUsername();
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -172,13 +214,15 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		uidColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof LdapEntry) {
-					return ((LdapEntry) element).getAttributes().get("uid") != null
-							? ((LdapEntry) element).getAttributes().get("uid") : "-";
+				if (element instanceof UsbFuseGroupResult) {
+					return   ((UsbFuseGroupResult) element).getStatusCode() == StatusCode.UNPRIVILEGED ? "Usb Yetkisi Yok" 
+							: ((UsbFuseGroupResult) element).getStatusCode() == StatusCode.UNPRIVILEGED ? "Usb Yetkisi Var" : " Yetki Durumu Bilinmiyor";
 				}
 				return Messages.getString("UNTITLED");
 			}
 		});
+		
+		
 	}
 
 	// private void populateTable() {
@@ -340,7 +384,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		List<String> selectedUsers = new ArrayList<String>();
 		for (TableItem item : items) {
 			if (item.getChecked()) {
-				selectedUsers.add(item.getText(1).toString());
+				selectedUsers.add(((UsbFuseGroupResult)item.getData()).getUsername());
 			}
 		}
 		return selectedUsers.toArray(new String[] {});
@@ -376,4 +420,66 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		return "cn={ahenk} istemcisinde aşağıdaki kullanıcılar için USB yetkileri düzenlenmiştir: \n {usernames} ";
 	}
 
+	
+	
+	
+	private EventHandler taskStatusNotificationHandler = new EventHandler() {
+		@Override
+		public void handleEvent(final Event event) {
+			Job job = new Job("TASK") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					monitor.beginTask("GET_USERS", 100);
+					try {
+
+						TaskStatusNotification taskStatus = (TaskStatusNotification) event
+								.getProperty("org.eclipse.e4.data");
+						byte[] data = taskStatus.getResult().getResponseData();
+						final Map<String, Object> responseData = new ObjectMapper().readValue(data, 0, data.length,
+								new TypeReference<HashMap<String, Object>>() {
+								});
+						Display.getDefault().asyncExec(new Runnable() {
+
+							@Override
+							public void run() {
+								
+								if(responseData.get("users")!=null){
+								
+								List<HashMap<String, Object>> tableItems = cast(responseData.get("users"));
+								
+								List<UsbFuseGroupResult> items = new ArrayList<>();
+								for (HashMap<String, Object> map : tableItems) {
+									UsbFuseGroupResult item = new UsbFuseGroupResult();
+									item.setUsername(map.get("username").toString());
+									item.setStatusCode(StatusCode.getType((Integer)map.get("statusCode")));
+									items.add(item);
+								}
+								if (items != null) {
+									tableViewer.setInput(items);
+									tableViewer.refresh();
+								}
+							}
+								
+							}
+						});
+						
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_GETTING_USER"));
+					}
+					monitor.worked(100);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				}
+			};
+
+			job.setUser(true);
+			job.schedule();
+		}
+	};
+	
+	public static <HashMap extends List<?>> HashMap cast(Object obj) {
+		return (HashMap) obj;
+	}
 }

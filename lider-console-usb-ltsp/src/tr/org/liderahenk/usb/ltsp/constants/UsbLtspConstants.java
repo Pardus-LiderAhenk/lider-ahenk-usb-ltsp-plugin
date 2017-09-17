@@ -17,6 +17,7 @@ public class UsbLtspConstants {
 	public static final class TASKS {
 		public static final String LIST_USB_FUSE_GROUP_STATUS = "LIST_USB_FUSE_GROUP_STATUS";
 		public static final String USB_FUSE_GROUP = "USB_FUSE_GROUP";
+		public static final String GET_USERS ="GET_USERS";
 	}
 
 }

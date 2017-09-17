@@ -24,14 +24,23 @@ public class UsbFuseGroupResult implements Serializable {
 	@Column(name = "USB_FUSE_GROUP_RESULT_ID", unique = true, nullable = false)
 	private Long id;
 
-	@Column(name = "USERNAME", nullable = false)
+	@Column(name = "USERNAME")
 	private String username;
 
-	@Column(name = "UID", nullable = false)
+	@Column(name = "UID")
 	private String uid;
 
-	@Column(name = "STATE_CODE", nullable = false)
+	@Column(name = "STATE_CODE")
 	private Integer statusCode;
+	
+	@Column(name = "AGENT_ID")
+	private Long agentId;
+	
+	@Column(name = "AGENT_DN")
+	private String agentDn;
+	
+	@Column(name = "DELETED")
+	private boolean deleted = false;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "CREATE_DATE", nullable = false)
@@ -104,6 +113,34 @@ public class UsbFuseGroupResult implements Serializable {
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+
+	public Long getAgentId() {
+		return agentId;
+	}
+
+	public void setAgentId(Long agentId) {
+		this.agentId = agentId;
+	}
+
+	public String getAgentDn() {
+		return agentDn;
+	}
+
+	public void setAgentDn(String agentDn) {
+		this.agentDn = agentDn;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public void setStatusCode(Integer statusCode) {
+		this.statusCode = statusCode;
 	}
 
 //	@Override

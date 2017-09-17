@@ -63,6 +63,8 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 					UsbFuseGroupResult obj = new UsbFuseGroupResult(null, r.getUsername(),
 							result.getCommandExecution().getUid(),
 							StatusCode.getType(Integer.parseInt(r.getStatusCode())), new Date(), endDate);
+					
+					obj.setAgentId(result.getAgentId());
 					dbService.save(obj);
 				}
 			}
