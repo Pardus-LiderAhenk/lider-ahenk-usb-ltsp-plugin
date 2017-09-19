@@ -25,7 +25,7 @@ class GetUser(AbstractPlugin):
         except Exception as e:
             self.logger.error('A problem occurred while editing usb privilege. Error Message: {0}'.format(str(e)))
             self.context.create_response(code=self.message_code.TASK_ERROR.value,
-                                         message='Kullanıcılar getirilirken düzenlenirken hata oluştu',
+                                         message='Kullanıcılar listelenirken hata oluştu',
                                          content_type=self.get_content_type().APPLICATION_JSON.value)
 
 
@@ -36,7 +36,7 @@ class GetUser(AbstractPlugin):
         directories = os.listdir('/home')
         for directory in directories:
             if os.path.isdir('/home/' + directory):
-                result = os.popen("grep " + directory + " /etc/passwd").read()
+                result = os.popen("getent passwd | grep " + directory + ).read()
                 if result:
                     user = dict()
                     user['username'] = str(directory)
