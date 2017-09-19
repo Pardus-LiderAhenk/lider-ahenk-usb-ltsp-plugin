@@ -40,6 +40,8 @@
 		<property name="pluginInfo" ref="pluginInfoImpl" />
 		<property name="resultFactory" ref="resultFactory" />
 		<property name="dbService" ref="dbService" />
+		<property name="ldapService" ref="ldapService" />
+		<property name="mailService" ref="mailService" />
 	</bean>
 
 	<service ref="listUsbFuseGroupResultCommand" interface="tr.org.liderahenk.lider.core.api.plugin.ICommand" />
@@ -50,22 +52,30 @@
 		<property name="resultFactory" ref="resultFactory" />
 	</bean>
 	
-	
 	<service ref="getUsers">
 		<interfaces>
 			<value>tr.org.liderahenk.lider.core.api.plugin.ICommand</value>
 			<value>tr.org.liderahenk.lider.core.api.plugin.ITaskAwareCommand</value>
 		</interfaces>
 	 </service>
-	
-	<bean id="getUsers" class="tr.org.liderahenk.usb.ltsp.commands.UsbGetUusersCommand">
+	 
+	 <bean id="getUsers" class="tr.org.liderahenk.usb.ltsp.commands.UsbGetUusersCommand">
 		<property name="pluginInfo" ref="pluginInfoImpl" />
 		<property name="resultFactory" ref="resultFactory" />
 		<property name="dbService" ref="dbService" />
 	</bean>
-
+	 
+	
 	<reference id="resultFactory"
 		interface="tr.org.liderahenk.lider.core.api.service.ICommandResultFactory" />
+		
 	<reference id="dbService"
 		interface="tr.org.liderahenk.lider.core.api.persistence.IPluginDbService" />
+
+	<reference id="ldapService"
+		interface="tr.org.liderahenk.lider.core.api.ldap.ILDAPService" />
+		
+		<reference id="mailService"
+		interface="tr.org.liderahenk.lider.core.api.mail.IMailService" />
+		
 </blueprint>

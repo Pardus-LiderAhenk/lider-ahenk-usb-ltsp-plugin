@@ -23,6 +23,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -69,6 +70,8 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	private Button btnEnableRemoveFuseGroupDate;
 	private Button btnRemoveFuseGroupDate;
 	private Text txtRemoveFuseGroupDate;
+	
+	private Button btnRefresh;
 	
 	private List<String> dnList;
 
@@ -118,6 +121,17 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		lblTable.setFont(SWTResourceManager.getFont("Sans", 9, SWT.BOLD));
 		lblTable.setText(Messages.getString("SELECT_USER"));
 
+		btnRefresh = new Button(parent, SWT.NONE);
+		btnRefresh.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+
+				getUserlistFromAgent();
+			}
+		});
+		btnRefresh.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		btnRefresh.setText(Messages.getString("refresh")); //$NON-NLS-1$
+		
 	//	createTableFilterArea(parent);
 
 		GridData dataSearchGrid = new GridData();
@@ -216,7 +230,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 			public String getText(Object element) {
 				if (element instanceof UsbFuseGroupResult) {
 					return   ((UsbFuseGroupResult) element).getStatusCode() == StatusCode.UNPRIVILEGED ? "Usb Yetkisi Yok" 
-							: ((UsbFuseGroupResult) element).getStatusCode() == StatusCode.UNPRIVILEGED ? "Usb Yetkisi Var" : " Yetki Durumu Bilinmiyor";
+							: ((UsbFuseGroupResult) element).getStatusCode() == StatusCode.PRIVILEGED ? "Usb Yetkisi Var" : " Yetki Durumu Bilinmiyor";
 				}
 				return Messages.getString("UNTITLED");
 			}
@@ -459,6 +473,10 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 									tableViewer.refresh();
 								}
 							}
+								
+								else{
+									getUserlistFromAgent();
+								}
 								
 							}
 						});

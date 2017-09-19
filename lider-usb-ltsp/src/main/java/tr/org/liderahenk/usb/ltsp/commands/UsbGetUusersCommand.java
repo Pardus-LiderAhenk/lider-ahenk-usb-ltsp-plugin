@@ -1,7 +1,6 @@
 package tr.org.liderahenk.usb.ltsp.commands;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import tr.org.liderahenk.lider.core.api.service.ICommandContext;
 import tr.org.liderahenk.lider.core.api.service.ICommandResult;
 import tr.org.liderahenk.lider.core.api.service.ICommandResultFactory;
 import tr.org.liderahenk.lider.core.api.service.enums.CommandResultStatus;
-import tr.org.liderahenk.usb.ltsp.entities.UsbFuseGroupResult;
 import tr.org.liderahenk.usb.ltsp.plugininfo.PluginInfoImpl;
 
 public class UsbGetUusersCommand implements ICommand, ITaskAwareCommand {

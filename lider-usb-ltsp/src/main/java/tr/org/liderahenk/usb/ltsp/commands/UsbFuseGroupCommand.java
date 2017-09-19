@@ -15,6 +15,9 @@ import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import tr.org.liderahenk.lider.core.api.ldap.ILDAPService;
+import tr.org.liderahenk.lider.core.api.ldap.model.LdapEntry;
+import tr.org.liderahenk.lider.core.api.mail.IMailService;
 import tr.org.liderahenk.lider.core.api.persistence.IPluginDbService;
 import tr.org.liderahenk.lider.core.api.persistence.entities.ICommandExecutionResult;
 import tr.org.liderahenk.lider.core.api.plugin.ICommand;
@@ -35,6 +38,8 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 	private ICommandResultFactory resultFactory;
 	private PluginInfoImpl pluginInfo;
 	private IPluginDbService dbService;
+	private ILDAPService ldapService;
+	private IMailService mailService;
 
 	@Override
 	public ICommandResult execute(ICommandContext context) throws Exception {
@@ -49,12 +54,14 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 					result.getResponseData().length, new TypeReference<HashMap<String, Object>>() {
 					});
 			if (responseData.get("fuse-group-results") != null) {
-				logger.error("JSON:" + responseData.get("fuse-group-results").toString());;
+				logger.info("JSON:" + responseData.get("fuse-group-results").toString());
+				;
 				List<AgentUsbFuseGroupResult> res = mapper.readValue(responseData.get("fuse-group-results").toString(),
 						new TypeReference<List<AgentUsbFuseGroupResult>>() {
 						});
 				for (AgentUsbFuseGroupResult r : res) {
-					Object endDateParam = result.getCommandExecution().getCommand().getTask().getParameterMap().get("endDate");
+					Object endDateParam = result.getCommandExecution().getCommand().getTask().getParameterMap()
+							.get("endDate");
 					Date endDate = null;
 					if (endDateParam != null && !endDateParam.toString().isEmpty()) {
 						endDate = cronToDate(endDateParam.toString());
@@ -63,14 +70,60 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 					UsbFuseGroupResult obj = new UsbFuseGroupResult(null, r.getUsername(),
 							result.getCommandExecution().getUid(),
 							StatusCode.getType(Integer.parseInt(r.getStatusCode())), new Date(), endDate);
-					
+
 					obj.setAgentId(result.getAgentId());
 					dbService.save(obj);
+
+					String username = r.getUsername();
+					List<LdapEntry> ldapUserList = ldapService.search("uid", username,new String[] {"uid","cn","sn","mail"});
+					
+					if(ldapUserList!=null && !ldapUserList.isEmpty()){
+						LdapEntry entry= ldapUserList.get(0);
+						
+						Map<String, String> attr= entry.getAttributes();
+						
+						if(attr !=null ){
+							String mailAddr = attr.get("mail");
+							if(mailAddr !=null){
+								
+								
+								List<String> toList= new ArrayList<String>();
+								toList.add(mailAddr);
+								
+								String subject="Lider Ahenk Merkezi Yönetim Sistemi Usb Hakları";
+								String body="Yöneticiniz tarafından " +new Date()+ " tarihinde ";
+								
+								switch (obj.getStatusCode()) {
+								case PRIVILEGED:
+									body +="  tarafınıza usb yetkisi verilmiştir. ";
+									break;
+
+								case UNPRIVILEGED:
+									body +=" usb yetkiniz alınmıştır.";
+									break;
+									
+								
+								default:
+									
+									break;
+								}
+								
+								sendMail(toList,subject,body);
+							}
+						}
+					}
 				}
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
+	}
+
+	private void sendMail(List<String> toList, String subject,String body) {
+		
+		
+		mailService.sendMail(toList, subject, body);
+		
 	}
 
 	@Override
@@ -109,17 +162,17 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 	public void setDbService(IPluginDbService dbService) {
 		this.dbService = dbService;
 	}
-	
+
 	public static Date cronToDate(String cronExpression) throws ParseException {
 		String[] splittedCron = cronExpression.split("\\s+");
-		
+
 		String minute = "";
 		if (splittedCron[0].equals("*")) {
 			minute = "00";
 		} else {
 			minute = splittedCron[0].length() < 2 ? "0" + splittedCron[0] : splittedCron[0];
 		}
-		
+
 		String hour = "";
 		if (splittedCron[1].equals("*")) {
 			hour = "00";
@@ -133,22 +186,39 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 		} else {
 			day = splittedCron[2].length() < 2 ? "0" + splittedCron[2] : splittedCron[2];
 		}
-		
+
 		String month = "";
 		if (splittedCron[3].equals("*")) {
 			month = "01";
 		} else {
 			month = (splittedCron[3].length() < 2 ? "0" + splittedCron[3] : splittedCron[3]);
 		}
-		
-		String year = splittedCron.length > 5 ? splittedCron[5] : Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
-		
-		String dateString = ( day + "/" + month + "/" + year + " " + hour + ":" + minute + ":00");
-		
+
+		String year = splittedCron.length > 5 ? splittedCron[5]
+				: Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
+
+		String dateString = (day + "/" + month + "/" + year + " " + hour + ":" + minute + ":00");
+
 		DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date date = df.parse(dateString);
 
 		return date;
+	}
+
+	public ILDAPService getLdapService() {
+		return ldapService;
+	}
+
+	public void setLdapService(ILDAPService ldapService) {
+		this.ldapService = ldapService;
+	}
+
+	public IMailService getMailService() {
+		return mailService;
+	}
+
+	public void setMailService(IMailService mailService) {
+		this.mailService = mailService;
 	}
 
 }
