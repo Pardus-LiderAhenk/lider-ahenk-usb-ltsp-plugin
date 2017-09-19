@@ -36,7 +36,7 @@ class GetUser(AbstractPlugin):
         directories = os.listdir('/home')
         for directory in directories:
             if os.path.isdir('/home/' + directory):
-                result = os.popen("getent passwd | grep " + directory + ).read()
+                result = os.popen("getent passwd | grep " + directory).read()
                 if result:
                     user = dict()
                     user['username'] = str(directory)
