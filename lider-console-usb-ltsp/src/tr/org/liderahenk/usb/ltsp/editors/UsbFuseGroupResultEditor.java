@@ -47,6 +47,8 @@ import tr.org.liderahenk.usb.ltsp.model.UsbFuseGroupResult;
  *
  */
 public class UsbFuseGroupResultEditor extends EditorPart {
+	public UsbFuseGroupResultEditor() {
+	}
 
 	private static final Logger logger = LoggerFactory.getLogger(UsbFuseGroupResultEditor.class);
 
@@ -295,6 +297,7 @@ public class UsbFuseGroupResultEditor extends EditorPart {
 			}
 			tableViewer.setInput(results != null ? results : new ArrayList<UsbFuseGroupResult>());
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error(e.getMessage(), e);
 			Notifier.error(null, Messages.getString("ERROR_ON_LIST"));
 		}

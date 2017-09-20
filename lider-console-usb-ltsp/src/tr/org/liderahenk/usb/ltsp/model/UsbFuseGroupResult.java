@@ -3,6 +3,8 @@ package tr.org.liderahenk.usb.ltsp.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import tr.org.liderahenk.usb.ltsp.enums.StatusCode;
 
 public class UsbFuseGroupResult implements Serializable {
@@ -115,7 +117,7 @@ public class UsbFuseGroupResult implements Serializable {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-
+	@JsonIgnore
 	public void setStatusCode(Integer statusCode) {
 		this.statusCode = statusCode;
 	}

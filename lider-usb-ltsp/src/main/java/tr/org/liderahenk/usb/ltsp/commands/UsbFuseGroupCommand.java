@@ -41,6 +41,8 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 	private ILDAPService ldapService;
 	private IMailService mailService;
 
+	private SimpleDateFormat sdf= new SimpleDateFormat("dd.MM.yyyy hh:mm");
+	
 	@Override
 	public ICommandResult execute(ICommandContext context) throws Exception {
 		return resultFactory.create(CommandResultStatus.OK, new ArrayList<String>(), this);
@@ -91,11 +93,12 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 								toList.add(mailAddr);
 								
 								String subject="Lider Ahenk Merkezi Yönetim Sistemi Usb Hakları";
-								String body="Yöneticiniz tarafından " +new Date()+ " tarihinde ";
+								String body="Yöneticiniz tarafından " +sdf.format(new Date())+ " tarihinde";
 								
 								switch (obj.getStatusCode()) {
 								case PRIVILEGED:
-									body +="  tarafınıza usb yetkisi verilmiştir. ";
+									body 	+=  sdf.format(obj.getEndDate()) != null ?  (obj.getEndDate() + " tarihine kadar ") : "" ;
+									body    +=  "tarafınıza usb yetkisi verilmiştir. ";
 									break;
 
 								case UNPRIVILEGED:
