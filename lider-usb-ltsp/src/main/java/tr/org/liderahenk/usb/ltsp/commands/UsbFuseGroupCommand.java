@@ -93,7 +93,7 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 								toList.add(mailAddr);
 								
 								String subject="Lider Ahenk Merkezi Yönetim Sistemi Usb Hakları";
-								String body="Yöneticiniz tarafından " +sdf.format(new Date())+ " tarihinde";
+								String body="Yöneticiniz tarafından " +sdf.format(new Date())+ " tarihinde ";
 								
 								switch (obj.getStatusCode()) {
 								case PRIVILEGED:
