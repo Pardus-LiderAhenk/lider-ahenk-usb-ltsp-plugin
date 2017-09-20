@@ -97,7 +97,7 @@ public class UsbFuseGroupCommand implements ICommand, ITaskAwareCommand {
 								
 								switch (obj.getStatusCode()) {
 								case PRIVILEGED:
-									body 	+=  sdf.format(obj.getEndDate()) != null ?  (obj.getEndDate() + " tarihine kadar ") : "" ;
+									body 	+= obj.getEndDate() != null ?  (sdf.format(obj.getEndDate()) + " tarihine kadar ") : "" ;
 									body    +=  "tarafınıza usb yetkisi verilmiştir. ";
 									break;
 
