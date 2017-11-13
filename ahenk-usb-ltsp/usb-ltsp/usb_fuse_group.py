@@ -15,6 +15,7 @@ class Fusegroup(AbstractPlugin):
         self.message_code = self.get_message_code()
 
     def does_user_exist(self, username):
+        username = username.replace(' ', '')
         result_code, p_out, p_err = self.execute('getent passwd | grep -c \'^{0}:\''.format(username))
 
         if not p_err and p_out.strip() == '1':
@@ -23,6 +24,7 @@ class Fusegroup(AbstractPlugin):
             return False
 
     def does_group_exist(self, groupname):
+        groupname = groupname.replace(' ', '')
         result_code, p_out, p_err = self.execute('getent group \'{0}\' /etc/passwd'.format(groupname))
         if p_out:
             return True
