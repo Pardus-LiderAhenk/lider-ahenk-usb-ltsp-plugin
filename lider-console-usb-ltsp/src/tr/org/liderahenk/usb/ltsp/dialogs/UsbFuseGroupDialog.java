@@ -46,12 +46,14 @@ import org.slf4j.LoggerFactory;
 import tr.org.liderahenk.liderconsole.core.dialogs.DefaultTaskDialog;
 import tr.org.liderahenk.liderconsole.core.exceptions.ValidationException;
 import tr.org.liderahenk.liderconsole.core.ldap.enums.DNType;
-import tr.org.liderahenk.liderconsole.core.ldap.model.LdapEntry;
+import tr.org.liderahenk.liderconsole.core.model.PdfContent;
 import tr.org.liderahenk.liderconsole.core.rest.requests.TaskRequest;
 import tr.org.liderahenk.liderconsole.core.rest.responses.IResponse;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
+import tr.org.liderahenk.liderconsole.core.widgets.Notifier.NotifierMode;
+import tr.org.liderahenk.liderconsole.core.widgets.NotifierColorsFactory.NotifierTheme;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.usb.ltsp.constants.UsbLtspConstants;
 import tr.org.liderahenk.usb.ltsp.enums.StatusCode;
@@ -63,7 +65,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(UsbFuseGroupDialog.class);
 	private TableViewer tableViewer;
-	// private TableFilter tableFilter;
+	 private TableFilter tableFilter;
 	private Text txtSearch;
 	private Button btnAddFuseGroup;
 	private Button btnRemoveFuseGroup;
@@ -74,12 +76,15 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 	private Button btnRefresh;
 	
 	private List<String> dnList;
+	
+	private String selectedUserDn;
+	private Label lblTable;
 
-	public UsbFuseGroupDialog(Shell parentShell, Set<String> dnSet) {
-		super(parentShell, dnSet, false, true);
+	public UsbFuseGroupDialog(Shell parentShell, Set<String> dnSet, String selectedUserDn) {
+		super(parentShell, dnSet, false, true,false,true);
 		
 		dnList = new ArrayList<String>(dnSet);
-		
+		this.selectedUserDn=selectedUserDn;
 		subscribeEventHandler(taskStatusNotificationHandler);
 	}
 
@@ -102,9 +107,29 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
 	private void getUserlistFromAgent() {
 		try {
+			Map<String, Object> parameterMap=null;
+			
+			if(selectedUserDn!=null){
+				
+				String[] selectedUserDnArr=selectedUserDn.split(",");
+				
+				if(selectedUserDnArr.length>0){
+					String[] selectedUserArr= selectedUserDnArr[0].split("=");
+					
+					if(selectedUserArr.length>1){
+						
+						String selectedUser= selectedUserArr[1];
+						
+						parameterMap = new HashMap<String, Object>();
 
+						
+						parameterMap.put("selectedUser",selectedUser );
+					}
+				}
+			}
+			
 			TaskRequest task = new TaskRequest(dnList, DNType.AHENK, getPluginName(), getPluginVersion(),
-					UsbLtspConstants.TASKS.GET_USERS,  null, null, null, new Date());
+					UsbLtspConstants.TASKS.GET_USERS,  parameterMap , null, null, new Date());
 			
 			IResponse response = TaskRestUtils.execute(task, false);
 			
@@ -117,22 +142,24 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
 	private void createTableArea(Composite parent) {
 
-		Label lblTable = new Label(parent, SWT.NONE);
+		lblTable = new Label(parent, SWT.NONE);
 		lblTable.setFont(SWTResourceManager.getFont("Sans", 9, SWT.BOLD));
-		lblTable.setText(Messages.getString("SELECT_USER"));
+		//lblTable.setText(Messages.getString("SELECT_USER"));
 
 		btnRefresh = new Button(parent, SWT.NONE);
 		btnRefresh.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				
+				selectedUserDn=null;
 
 				getUserlistFromAgent();
 			}
 		});
 		btnRefresh.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		btnRefresh.setText(Messages.getString("refresh")); //$NON-NLS-1$
+		btnRefresh.setText(Messages.getString("get_all_users")); //$NON-NLS-1$
 		
-	//	createTableFilterArea(parent);
+		createTableFilterArea(parent);
 
 		GridData dataSearchGrid = new GridData();
 		dataSearchGrid.grabExcessHorizontalSpace = true;
@@ -152,6 +179,10 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		table.getVerticalBar().setVisible(true);
 		tableViewer.setContentProvider(new ArrayContentProvider());
 		// populateTable();
+		
+		tableFilter= new TableFilter();
+		
+		tableViewer.addFilter(tableFilter);
 
 		GridData gridData = new GridData();
 		gridData.verticalAlignment = GridData.FILL;
@@ -162,9 +193,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		gridData.horizontalAlignment = GridData.FILL;
 		tableViewer.getControl().setLayoutData(gridData);
 
-		// tableFilter = new TableFilter();
-		// tableViewer.addFilter(tableFilter);
-		// tableViewer.refresh();
+		
 	}
 
 	private void createTableFilterArea(Composite parent) {
@@ -185,9 +214,10 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		txtSearch.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				// tableFilter.setSearchText(txtSearch.getText());
-				try {
-					List<LdapEntry> users = new ArrayList<LdapEntry>();
+				 tableFilter.setSearchText(txtSearch.getText());
+				 tableViewer.refresh();
+//				try {
+//					List<LdapEntry> users = new ArrayList<LdapEntry>();
 //					if (txtSearch.getText() == null || txtSearch.getText().trim().isEmpty()) {
 //						tableViewer.setInput(users);
 //						tableViewer.refresh();
@@ -204,9 +234,9 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 //					users = LdapUtils.getInstance().findUsers(filter.toString(), new String[] { "uid", "cn" });
 //					tableViewer.setInput(users);
 //					tableViewer.refresh();
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
 			}
 		});
 	}
@@ -348,11 +378,8 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 			if (searchString == null || searchString.length() == 0) {
 				return true;
 			}
-			LdapEntry item = (LdapEntry) element;
-			return item.getDistinguishedName().matches(searchString)
-					|| (item.getAttributes().get("uid") != null
-							&& item.getAttributes().get("uid").matches(searchString))
-					|| (item.getAttributes().get("cn") != null && item.getAttributes().get("cn").matches(searchString));
+			UsbFuseGroupResult item = (UsbFuseGroupResult) element;
+			return item.getUsername().matches(searchString);
 		}
 	}
 
@@ -457,22 +484,30 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 							@Override
 							public void run() {
 								
-								if(responseData.get("users")!=null){
-								
-								List<HashMap<String, Object>> tableItems = cast(responseData.get("users"));
-								
-								List<UsbFuseGroupResult> items = new ArrayList<>();
-								for (HashMap<String, Object> map : tableItems) {
-									UsbFuseGroupResult item = new UsbFuseGroupResult();
-									item.setUsername(map.get("username").toString());
-									item.setStatusCode(StatusCode.getType((Integer)map.get("statusCode")));
-									items.add(item);
+								if (responseData!=null && responseData.get("users") != null) {
+
+									List<HashMap<String, Object>> tableItems = cast(responseData.get("users"));
+									
+									if(tableItems.isEmpty()){
+										lblTable.setText("Aranılan kullanıcı bulunamadı.");
+										Notifier.notifyandShow(null, "UYARI", "Aranılan kullanıcı bulunamadı.", null, NotifierTheme.INFO_THEME);
+										//btnRefresh.setText("sfgdfg");
+										return;
+									}
+									else lblTable.setText("");
+
+									List<UsbFuseGroupResult> items = new ArrayList<>();
+									for (HashMap<String, Object> map : tableItems) {
+										UsbFuseGroupResult item = new UsbFuseGroupResult();
+										item.setUsername(map.get("username").toString());
+										item.setStatusCode(StatusCode.getType((Integer) map.get("statusCode")));
+										items.add(item);
+									}
+									if (items != null) {
+										tableViewer.setInput(items);
+										tableViewer.refresh();
+									}
 								}
-								if (items != null) {
-									tableViewer.setInput(items);
-									tableViewer.refresh();
-								}
-							}
 								
 								else{
 									getUserlistFromAgent();
@@ -497,6 +532,34 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 		}
 	};
 	
+	
+	
+	@Override
+	public PdfContent getPdfContent() {
+		
+		String[] columnNames={Messages.getString("USER_DN"),Messages.getString("USER_UID")};
+		float[] columnWidths={1,1};
+		
+		List<String[]> dataList=new ArrayList<>();
+		
+		
+		for (TableItem tItem : tableViewer.getTable().getItems()) {
+			
+			UsbFuseGroupResult item=(UsbFuseGroupResult) tItem.getData();
+			
+			String state=item.getStatusCode() == StatusCode.UNPRIVILEGED ? "Usb Yetkisi Yok" 
+					: item.getStatusCode() == StatusCode.PRIVILEGED ? "Usb Yetkisi Var" : " Yetki Durumu Bilinmiyor";
+;
+			
+			String[] row={item.getUsername(),state};
+			dataList.add(row);
+		} 
+		
+		
+		PdfContent content= new PdfContent("USB Raporu", "Kullanıcı USB Durumunu Gösterir Liste", columnNames, columnWidths, dataList);
+		
+		return content;
+	}
 	public static <HashMap extends List<?>> HashMap cast(Object obj) {
 		return (HashMap) obj;
 	}
