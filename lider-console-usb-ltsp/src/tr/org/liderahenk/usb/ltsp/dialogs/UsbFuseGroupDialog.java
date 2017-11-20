@@ -52,7 +52,6 @@ import tr.org.liderahenk.liderconsole.core.rest.responses.IResponse;
 import tr.org.liderahenk.liderconsole.core.rest.utils.TaskRestUtils;
 import tr.org.liderahenk.liderconsole.core.utils.SWTResourceManager;
 import tr.org.liderahenk.liderconsole.core.widgets.Notifier;
-import tr.org.liderahenk.liderconsole.core.widgets.Notifier.NotifierMode;
 import tr.org.liderahenk.liderconsole.core.widgets.NotifierColorsFactory.NotifierTheme;
 import tr.org.liderahenk.liderconsole.core.xmpp.notifications.TaskStatusNotification;
 import tr.org.liderahenk.usb.ltsp.constants.UsbLtspConstants;
@@ -488,7 +487,7 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 
 									List<HashMap<String, Object>> tableItems = cast(responseData.get("users"));
 									
-									if(tableItems.isEmpty()){
+									if(tableItems.isEmpty() && selectedUserDn!=null){
 										lblTable.setText("Aranılan kullanıcı bulunamadı.");
 										Notifier.notifyandShow(null, "UYARI", "Aranılan kullanıcı bulunamadı.", null, NotifierTheme.INFO_THEME);
 										//btnRefresh.setText("sfgdfg");
@@ -509,16 +508,32 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 									}
 								}
 								
-								else{
-									getUserlistFromAgent();
+								else if( responseData!=null && responseData.get("fuse-group-results")!=null){
+									
+									
+									String results = (String) responseData.get("fuse-group-results");
+									if(!results.isEmpty()){
+										
+										selectedUserDn="";
+										
+										getUserlistFromAgent();
+										
+										Notifier.notifyandShow(null, "", Messages.getString("AUTHORIZED_OK"), null, NotifierTheme.ERROR_THEME);
+									}
+									
+									
 								}
+								
+//								else{
+//									getUserlistFromAgent();
+//								}
 								
 							}
 						});
 						
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
-						Notifier.error("", Messages.getString("UNEXPECTED_ERROR_GETTING_USER"));
+						Notifier.notifyandShow(null, "HATA", Messages.getString("UNEXPECTED_ERROR_GETTING_USER"), null, NotifierTheme.ERROR_THEME);
 					}
 					monitor.worked(100);
 					monitor.done();
