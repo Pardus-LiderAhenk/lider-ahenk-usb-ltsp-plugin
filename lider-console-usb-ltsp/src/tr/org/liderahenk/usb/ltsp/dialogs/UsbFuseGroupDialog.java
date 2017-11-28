@@ -514,11 +514,11 @@ public class UsbFuseGroupDialog extends DefaultTaskDialog {
 									String results = (String) responseData.get("fuse-group-results");
 									if(!results.isEmpty()){
 										
-										selectedUserDn="";
+										//selectedUserDn="";
 										
 										getUserlistFromAgent();
 										
-										Notifier.notifyandShow(null, "", Messages.getString("AUTHORIZED_OK"), null, NotifierTheme.ERROR_THEME);
+										Notifier.notifyandShow(null, "", Messages.getString("AUTHORIZED_OK"), null, NotifierTheme.SUCCESS_THEME);
 									}
 									
 									
